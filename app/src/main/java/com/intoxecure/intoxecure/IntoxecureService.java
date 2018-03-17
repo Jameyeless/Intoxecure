@@ -5,36 +5,24 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
-import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
-
-import static android.content.ContentValues.TAG;
 
 public class IntoxecureService extends Service implements SensorEventListener {
     private static final String LOG_TAG = "ForegroundService";
     public static boolean IS_SERVICE_RUNNING = false;
     private static Notification notification;
-    private static final float SHAKE_THRESHOLD = 10.00f; // m/S**2
     private static final int MIN_REFRESH_TIME = 2000;
     public static long mLastRefreshTime;
     private static SensorManager sensorManager;
-    private static float x, y, z;
-    public static boolean started = false;
     public static double acceleration;
     private static Toast toast;
 
@@ -106,9 +94,9 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        x = event.values[0];
-        y = event.values[1];
-        z = event.values[2];
+        float x = event.values[0];
+        float y = event.values[1];
+        float z = event.values[2];
         acceleration = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
         Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
 

@@ -2,10 +2,8 @@ package com.intoxecure.intoxecure;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.CompoundButton;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 /**
@@ -13,7 +11,6 @@ import android.widget.ToggleButton;
  */
 
 public class MainActivity extends AppCompatActivity {
-    private  Intent intent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,8 +19,6 @@ public class MainActivity extends AppCompatActivity {
         ToggleButton toggle = findViewById(R.id.toggleButton);
         if (IntoxecureService.IS_SERVICE_RUNNING) {
             toggle.setChecked(true);
-            //startService(new Intent(MainActivity.this, IntoxecureService.class)
-             //   .setAction(Constants.ACTION.STARTFOREGROUND_ACTION));
         }
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
