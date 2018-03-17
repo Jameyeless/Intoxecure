@@ -1,5 +1,7 @@
 package com.intoxecure.intoxecure;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -8,7 +10,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class IntoxecureService extends Service implements SensorEventListener {
@@ -67,6 +68,14 @@ public class IntoxecureService extends Service implements SensorEventListener {
         SM.registerListener(this, mySensor, SensorManager.SENSOR_DELAY_NORMAL);
 
         //here u should make your service foreground so it will keep working even if app closed
+
+        Notification notification  = new Notification.Builder(this)
+                .setContentTitle("Intoxecure")
+                .setContentText("Accelerometer is active")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setAutoCancel(false)
+                .getNotification();
+        this.startForeground(1, notification);
         return Service.START_STICKY;
     }
 }

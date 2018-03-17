@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Intoxecure</string>
+    <string name="channel_name">Intoxecure</string>
+    <string name="channel_description">Intoxecure Service Channel</string>
 </resources>
