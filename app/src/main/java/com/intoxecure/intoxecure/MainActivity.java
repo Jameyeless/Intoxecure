@@ -18,8 +18,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ToggleButton toggle = findViewById(R.id.toggleButton);
-        if (IntoxecureService.IS_SERVICE_RUNNING)
+        if (IntoxecureService.IS_SERVICE_RUNNING) {
             toggle.setChecked(true);
+            //startService(new Intent(MainActivity.this, IntoxecureService.class)
+             //   .setAction(Constants.ACTION.STARTFOREGROUND_ACTION));
+        }
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Intent service = new Intent(MainActivity.this, IntoxecureService.class);

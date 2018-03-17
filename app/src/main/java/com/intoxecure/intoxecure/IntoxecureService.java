@@ -46,7 +46,8 @@ public class IntoxecureService extends Service implements SensorEventListener {
                 .setContentTitle("Intoxecure")
                 .setContentText("Accelerometer is active")
                 .setSmallIcon(R.drawable.intoxecure_logo_v1)
-                .setAutoCancel(false);
+                .setAutoCancel(false)
+                .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
             notification = nBuilder.build();
@@ -71,15 +72,15 @@ public class IntoxecureService extends Service implements SensorEventListener {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_ACTION)) {
             Log.i(LOG_TAG, "Received Start Foreground Intent ");
-            startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, notification);
             Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
+            startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, notification);
             registerListener();
         } else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
             Log.i(LOG_TAG, "Received Stop Foreground Intent");
             stopForeground(true);
             stopSelf();
         }
-        return START_STICKY;
+        return Service.START_REDELIVER_INTENT;
     }
 
     @Override
@@ -98,7 +99,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
-
+        Log.d("mySensor", "Accelerometer accuracy");
     }
 
     @Override
