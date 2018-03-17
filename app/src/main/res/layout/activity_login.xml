@@ -51,6 +51,7 @@
 
     <Button
         android:id="@+id/Blogin"
+        style="@android:style/Widget.Holo.Button"
         android:layout_width="200dp"
         android:layout_height="50dp"
         android:layout_alignLeft="@+id/editText3"

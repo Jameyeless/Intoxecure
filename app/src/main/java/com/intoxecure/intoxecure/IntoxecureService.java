@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
@@ -29,10 +30,13 @@ public class IntoxecureService extends Service implements SensorEventListener {
     public static boolean IS_SERVICE_RUNNING = false;
     private static Notification notification;
     private static final float SHAKE_THRESHOLD = 10.00f; // m/S**2
-    private static final int MIN_TIME_BETWEEN_SHAKES_MILLISECS = 1000;
-    private long mLastShakeTime;
+    private static final int MIN_REFRESH_TIME = 2000;
+    public static long mLastRefreshTime;
     private static SensorManager sensorManager;
-    public static float x, y, z;
+    private static float x, y, z;
+    public static boolean started = false;
+    public static double acceleration;
+    private static Toast toast;
 
     @Override
     public void onCreate() {
@@ -55,11 +59,8 @@ public class IntoxecureService extends Service implements SensorEventListener {
             notification = nBuilder.getNotification();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Create the NotificationChannel, but only on API 26+ because
-            // the NotificationChannel class is new and not in the support library
             NotificationChannel channel = new NotificationChannel(channelID, name, NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription(description);
-            // Register the channel with the system
             NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             notificationManager.createNotificationChannel(channel);
         }
@@ -75,6 +76,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
             Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
             startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, notification);
             registerListener();
+            toast = Toast.makeText(getApplicationContext(), null, Toast.LENGTH_SHORT);
         } else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
             Log.i(LOG_TAG, "Received Stop Foreground Intent");
             stopForeground(true);
@@ -104,30 +106,25 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            long curTime = System.currentTimeMillis();
-            if ((curTime - mLastShakeTime) > MIN_TIME_BETWEEN_SHAKES_MILLISECS) {
+        x = event.values[0];
+        y = event.values[1];
+        z = event.values[2];
+        acceleration = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
+        Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
 
-                x = event.values[0];
-                y = event.values[1];
-                z = event.values[2];
-
-                double acceleration = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
-                Log.d("mySensor", "Acceleration is " + acceleration + "m/s^2");
-
-                if (acceleration > SHAKE_THRESHOLD) {
-                    mLastShakeTime = curTime;
-                    Toast.makeText(getApplicationContext(), "FALL DETECTED",
-                            Toast.LENGTH_LONG).show();
-                }
-            }
+        long curTime = System.currentTimeMillis();
+        if ((curTime - mLastRefreshTime) > MIN_REFRESH_TIME) {
+            mLastRefreshTime = curTime;
+            toast.cancel();
+            toast.show();
         }
     }
 
     private void registerListener() {
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_NORMAL);
+                SensorManager.SENSOR_DELAY_NORMAL
+        );
     }
 
     private void unregisterListener() {

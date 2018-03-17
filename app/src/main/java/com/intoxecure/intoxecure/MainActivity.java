@@ -2,8 +2,10 @@ package com.intoxecure.intoxecure;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 /**
@@ -36,5 +38,10 @@ public class MainActivity extends AppCompatActivity {
                 startService(service);
             }
         });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 }
