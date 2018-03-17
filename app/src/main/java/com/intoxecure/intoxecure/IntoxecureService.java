@@ -83,7 +83,10 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
             Notification notification;
 
-            notification = nBuilder.getNotification();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+                notification = nBuilder.build();
+            else
+                notification = nBuilder.getNotification();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 // Create the NotificationChannel, but only on API 26+ because
