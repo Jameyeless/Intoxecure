@@ -28,7 +28,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
     private Sensor mySensor;
     private SensorManager SM;
-    private static final float SHAKE_THRESHOLD = 15.00f; // m/S**2
+    private static final float SHAKE_THRESHOLD = 10.00f; // m/S**2
     private static final int MIN_TIME_BETWEEN_SHAKES_MILLISECS = 1000;
     private static final String CHANNEL_ID = "intoxecure_service_id";
     private long mLastShakeTime;
@@ -68,24 +68,23 @@ public class IntoxecureService extends Service implements SensorEventListener {
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Notification notification;
+
 
         if (intent.getIntExtra("stop", 0) == 0) {
-            Toast.makeText(this, "Start Detecting", Toast.LENGTH_LONG).show();
             SM = (SensorManager) getSystemService(SENSOR_SERVICE);
             mySensor = SM.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             SM.registerListener(this, mySensor, SensorManager.SENSOR_DELAY_NORMAL);
 
-            //here u should make your service foreground so it will keep working even if app closed
-
-            notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+            NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
                     .setContentTitle("Intoxecure")
                     .setContentText("Accelerometer is active")
-                    //.setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setAutoCancel(false)
-                    .build();
+                    .setSmallIcon(R.drawable.intoxecure_logo_v1)
+                    .setAutoCancel(false);
 
-            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            Notification notification;
+
+            notification = nBuilder.getNotification();
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 // Create the NotificationChannel, but only on API 26+ because
                 // the NotificationChannel class is new and not in the support library
@@ -95,11 +94,11 @@ public class IntoxecureService extends Service implements SensorEventListener {
                 NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
                 channel.setDescription(description);
                 // Register the channel with the system
+                NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 notificationManager.createNotificationChannel(channel);
             }
 
-            //notificationManager.notify( 1, notification);
-            this.startForeground(1, notification);
+            startForeground(1, notification);
 
         } else {
             SM.unregisterListener(this);

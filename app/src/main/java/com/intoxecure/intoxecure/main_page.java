@@ -3,6 +3,7 @@ package com.intoxecure.intoxecure;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Toast;
@@ -12,7 +13,7 @@ import android.widget.ToggleButton;
  * Created by EdRagasa on 16/03/2018.
  */
 
-public class main_page extends Activity{
+public class main_page extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
