@@ -20,7 +20,11 @@
         <service
             android:name=".IntoxecureService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.intoxecure.intoxecure.IntoxecureService"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

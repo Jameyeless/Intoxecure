@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 /**
@@ -21,10 +22,15 @@ public class main_page extends Activity{
         ToggleButton toggle = findViewById(R.id.toggleButton);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Intent intent = new Intent(IntoxecureService.INTOXECURE_SERVICE);
                 if (isChecked) {
-                    startService(new Intent(main_page.this, IntoxecureService.class));
+                    intent.putExtra("stop", 0);
+                    Toast.makeText(main_page.this, "Service Started", Toast.LENGTH_SHORT).show();
+                    startService(intent);
                 } else {
-                    stopService(new Intent(main_page.this, IntoxecureService.class));
+                    intent.putExtra("stop", 1);
+                    Toast.makeText(main_page.this, "Service Stopped", Toast.LENGTH_SHORT).show();
+                    startService(intent);
                 }
             }
         });

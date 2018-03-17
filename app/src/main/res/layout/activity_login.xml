@@ -4,8 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient2"
+
     tools:context="com.intoxecure.intoxecure.Login">
+    <!-- android:background="@drawable/gradient2" -->
 
     <ImageView
         android:id="@+id/logo"
