@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
+    android:background="@drawable/gradient2"
     tools:context="com.intoxecure.intoxecure.LoginActivity">
-    <!-- android:background="@drawable/gradient2" -->
+    <!--  -->
 
     <ImageView
         android:id="@+id/logo"
@@ -15,6 +15,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="46dp"
+        android:contentDescription="@string/app_name"
         app:srcCompat="@drawable/intoxecure_logo_v1" />
 
     <EditText
@@ -26,10 +27,11 @@
         android:layout_marginTop="108dp"
         android:background="#11000000"
         android:drawableLeft="@drawable/ic_action_username"
+        android:drawableStart="@drawable/ic_action_username"
         android:ems="10"
-        android:hint="Username"
+        android:hint="@string/username_text"
         android:inputType="textPersonName"
-        android:textSize="16dp" />
+        android:textSize="16sp" />
 
     <EditText
         android:id="@+id/editText3"
@@ -41,10 +43,11 @@
         android:layout_marginTop="28dp"
         android:background="#11000000"
         android:drawableLeft="@drawable/ic_action_pass"
+        android:drawableStart="@drawable/ic_action_pass"
         android:ems="10"
-        android:hint="Password"
+        android:hint="@string/password_text"
         android:inputType="textPassword"
-        android:textSize="16dp" />
+        android:textSize="16sp" />
 
     <Button
         android:id="@+id/Blogin"
@@ -55,7 +58,7 @@
         android:layout_below="@+id/editText3"
         android:layout_marginTop="37dp"
         android:onClick="onLoginClick"
-        android:text="Login" />
+        android:text="@string/login_button" />
 
     <TextView
         android:id="@+id/textView4"
@@ -64,7 +67,7 @@
         android:layout_below="@+id/Blogin"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="8dp"
-        android:text="No Account? Register Here"
+        android:text="@string/no_account_link"
         android:textColor="#fff"
         android:textSize="12sp" />
 

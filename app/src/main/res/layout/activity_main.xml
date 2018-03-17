@@ -1,49 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient"
     >
-    <!-- android:background="@drawable/gradient" -->
+    <!--  -->
 
     <Button
         android:id="@+id/button2"
+        style="@android:style/Widget.Holo.Light.Button"
         android:layout_width="125dp"
         android:layout_height="50dp"
         android:layout_alignLeft="@+id/toggleButton"
         android:layout_alignParentBottom="true"
         android:layout_alignStart="@+id/toggleButton"
         android:layout_marginBottom="143dp"
-        android:text="Button" />
+        android:text="@string/schedule_button"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white" />
 
     <Button
         android:id="@+id/button3"
+        style="@android:style/Widget.Holo.Light.Button"
         android:layout_width="125dp"
         android:layout_height="50dp"
         android:layout_alignEnd="@+id/toggleButton"
         android:layout_alignRight="@+id/toggleButton"
         android:layout_below="@+id/toggleButton"
-        android:text="Button" />
+        android:text="@string/profile_button"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white" />
 
     <Button
         android:id="@+id/button4"
+        style="@android:style/Widget.Holo.Light.Button"
         android:layout_width="125dp"
         android:layout_height="50dp"
         android:layout_alignLeft="@+id/button2"
         android:layout_alignStart="@+id/button2"
         android:layout_below="@+id/button3"
         android:layout_marginTop="27dp"
-        android:text="Button" />
+        android:text="@string/settings_button"
+        android:textAllCaps="false"
+        android:textColor="@android:color/background_light" />
 
     <Button
         android:id="@+id/button5"
+        style="@android:style/Widget.Holo.Light.Button"
         android:layout_width="125dp"
         android:layout_height="50dp"
         android:layout_alignBaseline="@+id/button4"
         android:layout_alignBottom="@+id/button4"
         android:layout_alignLeft="@+id/button3"
         android:layout_alignStart="@+id/button3"
-        android:text="Button" />
+        android:text="@string/about_button"
+        android:textAllCaps="false"
+        android:textColor="@android:color/background_light" />
 
     <ToggleButton
         android:id="@+id/toggleButton"
@@ -52,8 +64,7 @@
         android:layout_above="@+id/button2"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="32dp"
-        android:checked="false"
-        android:text="ToggleButton" />
+        android:checked="false" />
 
     <ImageView
         android:id="@+id/imageView"
@@ -63,6 +74,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignStart="@+id/toggleButton"
         android:layout_marginTop="19dp"
+        android:contentDescription="@string/app_name"
         android:src="@drawable/intoxecure_logo_v1" />
 
 </RelativeLayout>

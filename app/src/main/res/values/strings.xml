@@ -4,4 +4,13 @@
     <string name="channel_description">Intoxecure Service Channel</string>
     <string name="channel_id">com.intoxecure.intoxecure</string>
     <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_activity_asd">asd</string>
+    <string name="schedule_button">Schedule</string>
+    <string name="settings_button">Settings</string>
+    <string name="profile_button">Profile</string>
+    <string name="about_button">About</string>
+    <string name="no_account_link">No Account? Register Here</string>
+    <string name="login_button">Login</string>
+    <string name="username_text">Username</string>
+    <string name="password_text">Password</string>
 </resources>
