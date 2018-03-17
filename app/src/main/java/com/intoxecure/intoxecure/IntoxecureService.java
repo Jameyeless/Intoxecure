@@ -3,40 +3,101 @@ package com.intoxecure.intoxecure;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import static android.content.ContentValues.TAG;
+
 public class IntoxecureService extends Service implements SensorEventListener {
-    public IntoxecureService() {
+    private static final String LOG_TAG = "ForegroundService";
+    public static boolean IS_SERVICE_RUNNING = false;
+    private static Notification notification;
+    private static final float SHAKE_THRESHOLD = 10.00f; // m/S**2
+    private static final int MIN_TIME_BETWEEN_SHAKES_MILLISECS = 1000;
+    private long mLastShakeTime;
+    private static SensorManager sensorManager;
+    public static float x, y, z;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        // Prepare notification
+        CharSequence name = getString(R.string.channel_name);
+        String description = getString(R.string.channel_description);
+        String channelID = getString(R.string.channel_id);
+        NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(getApplicationContext(), channelID)
+                .setContentTitle("Intoxecure")
+                .setContentText("Accelerometer is active")
+                .setSmallIcon(R.drawable.intoxecure_logo_v1)
+                .setAutoCancel(false);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+            notification = nBuilder.build();
+        else
+            notification = nBuilder.getNotification();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create the NotificationChannel, but only on API 26+ because
+            // the NotificationChannel class is new and not in the support library
+            NotificationChannel channel = new NotificationChannel(channelID, name, NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription(description);
+            // Register the channel with the system
+            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        // Prepare sensor
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_ACTION)) {
+            Log.i(LOG_TAG, "Received Start Foreground Intent ");
+            startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, notification);
+            Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
+            registerListener();
+        } else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
+            Log.i(LOG_TAG, "Received Stop Foreground Intent");
+            stopForeground(true);
+            stopSelf();
+        }
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i(LOG_TAG, "In onDestroy");
+        unregisterListener();
+        Toast.makeText(this, "Service Stopped", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Used only in case if services are bound (Bound Services).
+        return null;
     }
 
-    private Sensor mySensor;
-    private SensorManager SM;
-    private static final float SHAKE_THRESHOLD = 10.00f; // m/S**2
-    private static final int MIN_TIME_BETWEEN_SHAKES_MILLISECS = 1000;
-    private static final String CHANNEL_ID = "intoxecure_service_id";
-    private long mLastShakeTime;
-    public static float x, y, z;
-    public static final String INTOXECURE_SERVICE = "com.intoxecure.intoxecure.IntoxecureService";
-
     @Override
-    public void onCreate() {
+    public void onAccuracyChanged(Sensor sensor, int i) {
 
     }
 
@@ -62,52 +123,13 @@ public class IntoxecureService extends Service implements SensorEventListener {
         }
     }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-
+    private void registerListener() {
+        sensorManager.registerListener(this,
+                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-    public int onStartCommand(Intent intent, int flags, int startId) {
-
-
-        if (intent.getIntExtra("stop", 0) == 0) {
-            SM = (SensorManager) getSystemService(SENSOR_SERVICE);
-            mySensor = SM.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-            SM.registerListener(this, mySensor, SensorManager.SENSOR_DELAY_NORMAL);
-
-            NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                    .setContentTitle("Intoxecure")
-                    .setContentText("Accelerometer is active")
-                    .setSmallIcon(R.drawable.intoxecure_logo_v1)
-                    .setAutoCancel(false);
-
-            Notification notification;
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-                notification = nBuilder.build();
-            else
-                notification = nBuilder.getNotification();
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // Create the NotificationChannel, but only on API 26+ because
-                // the NotificationChannel class is new and not in the support library
-                CharSequence name = getString(R.string.channel_name);
-                String description = getString(R.string.channel_description);
-                int importance = NotificationManagerCompat.IMPORTANCE_DEFAULT;
-                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-                channel.setDescription(description);
-                // Register the channel with the system
-                NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                notificationManager.createNotificationChannel(channel);
-            }
-
-            startForeground(1, notification);
-
-        } else {
-            SM.unregisterListener(this);
-            this.stopForeground(true);
-            this.stopSelf();
-        }
-        return Service.START_STICKY;
+    private void unregisterListener() {
+        sensorManager.unregisterListener(this);
     }
 }

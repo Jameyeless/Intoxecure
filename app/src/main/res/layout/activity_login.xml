@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
-    tools:context="com.intoxecure.intoxecure.Login">
+    tools:context="com.intoxecure.intoxecure.LoginActivity">
     <!-- android:background="@drawable/gradient2" -->
 
     <ImageView
