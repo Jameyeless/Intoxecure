@@ -13,9 +13,11 @@ public class Login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
     }
 
-    public void StartAcivity(View view) {
-        Intent serviceIntent = new Intent();
-        serviceIntent.setAction("com.intoxecure.intoxecure.IntoxecureService");
-        startService(serviceIntent);
+
+    public void onLoginClick(View v) {
+        if(v.getId() == R.id.Blogin){
+            Intent i = new Intent(Login.this, main_page.class);
+            startActivity(i);
+        }
     }
 }

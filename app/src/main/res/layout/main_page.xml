@@ -52,6 +52,7 @@
         android:layout_above="@+id/button2"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="32dp"
+        android:checked="false"
         android:text="ToggleButton" />
 
     <ImageView
