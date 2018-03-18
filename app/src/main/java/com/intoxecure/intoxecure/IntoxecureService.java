@@ -39,7 +39,8 @@ public class IntoxecureService extends Service implements SensorEventListener {
                 .setContentText("Accelerometer is active")
                 .setSmallIcon(R.drawable.intoxecure_logo_v1)
                 .setAutoCancel(false)
-                .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0));
+                .setContentIntent(PendingIntent.getActivity(this, 0,
+                        new Intent(this, MainActivity.class), 0));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
             notification = nBuilder.build();
@@ -100,6 +101,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
         acceleration = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
         Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
 
+        // Workaround for unexpected process termination during idle state
         long curTime = System.currentTimeMillis();
         if ((curTime - mLastRefreshTime) > MIN_REFRESH_TIME) {
             mLastRefreshTime = curTime;

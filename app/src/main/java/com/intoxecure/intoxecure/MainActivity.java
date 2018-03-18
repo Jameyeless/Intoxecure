@@ -3,6 +3,7 @@ package com.intoxecure.intoxecure;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ToggleButton;
 
@@ -38,5 +39,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+    }
+
+    public void onSettingsClick(View view) {
+        startActivity(new Intent(this, SettingsActivity.class));
     }
 }
