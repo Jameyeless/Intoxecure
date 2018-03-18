@@ -27,6 +27,7 @@
         android:layout_alignEnd="@+id/toggleButton"
         android:layout_alignRight="@+id/toggleButton"
         android:layout_below="@+id/toggleButton"
+        android:onClick="onProfileClick"
         android:text="@string/profile_button"
         android:textAllCaps="false"
         android:textColor="@android:color/white" />
