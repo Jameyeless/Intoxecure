@@ -1,6 +1,5 @@
 package com.intoxecure.intoxecure;
 
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,17 +8,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ChangeTrusteeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_trustee);
 
-        // TODO: Instead of getting contactList from Contacts, get from SharedPreferences
         ContactList contactList = new ContactList(this);
-        ArrayAdapter adapter = new ContactsArrayAdapter(this, R.layout.trustee_list_item, contactList);
-        ListView listView = findViewById(R.id.trusteeListView);
+        ArrayAdapter adapter = new ContactsArrayAdapter(this, R.layout.contact_list_item, contactList);
+        ListView listView = findViewById(R.id.contactListView);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -30,9 +28,5 @@ public class ProfileActivity extends AppCompatActivity {
                         .show();
             }
         });
-    }
-
-    public void onChangeClick(View view) {
-        startActivity(new Intent(this, ChangeTrusteeActivity.class));
     }
 }

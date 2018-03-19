@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.intoxecure.intoxecure">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
         android:allowBackup="true"
@@ -26,13 +28,30 @@
 
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings" />
-        <activity android:name=".ProfileActivity"
+            android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity"
-            android:label="@string/title_activity_profile">
+            tools:targetApi="jelly_bean">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.intoxecure.intoxecure.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ProfileActivity"
+            android:label="@string/title_activity_profile"
+            android:parentActivityName=".MainActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.intoxecure.intoxecure.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ChangeTrusteeActivity"
+            android:label="@string/title_activity_trustee"
+            android:parentActivityName=".ProfileActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.intoxecure.intoxecure.ProfileActivity" />
         </activity>
     </application>
 

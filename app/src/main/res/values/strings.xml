@@ -13,6 +13,9 @@
     <string name="password_text">Password</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_profile">Profile</string>
+    <string name="title_activity_trustee">Change Trustees</string>
+    <string name="contact_imageview">Profile Pic</string>
+    <string name="placeholder">Hello world</string>
 
     <!-- Strings related to Settings -->
 
