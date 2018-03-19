@@ -15,7 +15,9 @@
     <string name="title_activity_profile">Profile</string>
     <string name="title_activity_trustee">Change Trustees</string>
     <string name="contact_imageview">Profile Pic</string>
-    <string name="placeholder">Hello world</string>
+    <string name="placeholder">Placeholder</string>
+    <string name="trustee_text">Trustees</string>
+    <string name="change_button">Change</string>
 
     <!-- Strings related to Settings -->
 

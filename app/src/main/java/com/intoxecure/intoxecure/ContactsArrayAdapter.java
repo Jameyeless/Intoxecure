@@ -34,10 +34,12 @@ public class ContactsArrayAdapter extends ArrayAdapter {
             ImageView contactIconView = convertView.findViewById(R.id.contact_icon);
             contactNameView.setText(contactList.contactName.get(position));
             contactNoView.setText(contactList.contactNo.get(position));
-            String photoUriString = contactList.contactPhoto.get(position);
-            if (photoUriString != null)
-                contactIconView.setImageURI(Uri.parse(photoUriString));
-
+            String photoUriString;
+            if (position<contactList.contactPhoto.size()) {
+                photoUriString = contactList.contactPhoto.get(position);
+                if (photoUriString != null)
+                    contactIconView.setImageURI(Uri.parse(photoUriString));
+            }
         }
         return convertView;
     }

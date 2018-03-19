@@ -68,7 +68,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
             android:onClick="onChangeClick"
-            android:text="@string/placeholder"
+            android:text="@string/change_button"
             android:textColor="@android:color/white"
             android:textSize="24sp"
             app:layout_constraintStart_toEndOf="@+id/textView" />
@@ -77,7 +77,7 @@
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/placeholder"
+            android:text="@string/trustee_text"
             android:textColor="@android:color/white"
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="parent"

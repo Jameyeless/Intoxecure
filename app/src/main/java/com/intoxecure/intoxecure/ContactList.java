@@ -1,9 +1,14 @@
 package com.intoxecure.intoxecure;
 
-
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.provider.ContactsContract;
+import android.util.Log;
+import android.util.SparseBooleanArray;
+import android.widget.ListView;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,18 +18,56 @@ class ContactList {
     List<String> contactPhoto = new ArrayList<>();
 
     ContactList(Context context) {
-        Cursor phones = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
-        assert phones != null;
-        while (phones.moveToNext()) {
-            contactName.add(phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)));
-            contactNo.add(phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
-            contactPhoto.add(phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI)));
+        Cursor cursor = context.getContentResolver().query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null,null,null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+        assert cursor != null;
+        while (cursor.moveToNext()) {
+            contactName.add(cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)));
+            contactNo.add(cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
+            contactPhoto.add(cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI)));
         }
-        phones.close();
+        cursor.close();
+    }
+
+    ContactList(SavedContactsDbHelper dbHelper) {
+        // TODO: Synchronize database contacts with contacts in phone
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query(SavedContactsContract.ContactEntry.TABLE_NAME,
+                null, null, null, null, null,
+                SavedContactsContract.ContactEntry.COLUMN_NAME_NAME + " ASC");
+        assert cursor != null;
+        while (cursor.moveToNext()) {
+            contactName.add(cursor.getString(cursor.getColumnIndex(SavedContactsContract.ContactEntry.COLUMN_NAME_NAME)));
+            contactNo.add(cursor.getString(cursor.getColumnIndex(SavedContactsContract.ContactEntry.COLUMN_NAME_PHONE)));
+        }
+        cursor.close();
+        db.close();
     }
 
     int size() {
         return contactName.size();
+    }
+
+    void SaveContactList(ListView listView, SavedContactsDbHelper dbHelper) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.execSQL("DELETE FROM " + SavedContactsContract.ContactEntry.TABLE_NAME);
+        if (listView != null) {
+            Log.d("this.size()", Integer.toString(this.size()));
+            for (int i = 0; i < this.size(); i++) {
+                if (listView.isItemChecked(i)) {
+                    ContentValues values = new ContentValues();
+                    values.put(SavedContactsContract.ContactEntry.COLUMN_NAME_NAME, contactName.get(i));
+                    values.put(SavedContactsContract.ContactEntry.COLUMN_NAME_PHONE, contactNo.get(i));
+                    db.insert(SavedContactsContract.ContactEntry.TABLE_NAME, null, values);
+                    Log.d("ContactList", "insterted");
+                }
+                Log.d("ContactList", "OKAY" + Integer.toString(i));
+            }
+
+        } else
+            Log.d("ContactList", "NOT OKAY");
+        db.close();
     }
 
     // constructor from arrays
