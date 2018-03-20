@@ -11,6 +11,7 @@
         android:id="@+id/contactListView"
         android:layout_width="395dp"
         android:layout_height="562dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

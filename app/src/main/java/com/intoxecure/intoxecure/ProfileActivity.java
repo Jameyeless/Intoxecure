@@ -14,27 +14,17 @@ import android.widget.Toast;
 public class ProfileActivity extends AppCompatActivity {
     ContactList contactList;
     ArrayAdapter adapter;
+    boolean firstOpen = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        // TODO: Instead of getting contactList from Contacts, get from SharedPreferences
-        contactList = new ContactList(new SavedContactsDbHelper(this));
+        contactList = new ContactList(this, false);
         adapter = new ContactsArrayAdapter(this, R.layout.trustee_list_item, contactList);
         ListView listView = findViewById(R.id.trusteeListView);
         listView.setAdapter(adapter);
-
-        // ClickListener for listView
-        /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                Toast.makeText(getApplicationContext(),
-                        "Click ListItem Number " + position, Toast.LENGTH_LONG)
-                        .show();
-            }
-        });*/
     }
 
     public void onChangeClick(View view) {
@@ -43,24 +33,12 @@ public class ProfileActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        contactList = new ContactList(new SavedContactsDbHelper(this));
-        adapter.notifyDataSetChanged();
         super.onResume();
-
-        Log.d("OnResume", "resumed");
+        if (!firstOpen) {
+            contactList = new ContactList(this, false);
+            adapter.notifyDataSetChanged();
+        } else {
+            firstOpen = false;
+        }
     }
-/*
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        contactList = new ContactList(new SavedContactsDbHelper(this));
-        adapter.notifyDataSetChanged();
-        Log.d("OnRestart", "retarted");
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d("onStart", "started");
-    }*/
 }
