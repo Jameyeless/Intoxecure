@@ -44,4 +44,11 @@ public class MainActivity extends AppCompatActivity {
     public void onProfileClick(View view) {
         startActivity(new Intent(this, ProfileActivity.class));
     }
+
+    public void onLogoutClick(View v) {
+        if(v.getId() == R.id.logout){
+            Intent i = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(i);
+        }
+    }
 }

@@ -79,4 +79,17 @@
         android:contentDescription="@string/app_name"
         android:src="@drawable/intoxecure_logo_v3" />
 
+    <Button
+        android:id="@+id/logout"
+        style="@android:style/Widget.Holo.Light.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/toggleButton"
+        android:layout_alignRight="@+id/toggleButton"
+        android:layout_alignTop="@+id/imageView"
+        android:onClick="onLogoutClick"
+        android:text="Log Out"
+        android:textAllCaps="false"
+        android:textColor="@android:color/background_light" />
+
 </RelativeLayout>
