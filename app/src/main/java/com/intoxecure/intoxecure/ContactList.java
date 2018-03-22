@@ -1,12 +1,19 @@
 package com.intoxecure.intoxecure;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.provider.ContactsContract;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +22,7 @@ class ContactList {
     private List<String> contactName = new ArrayList<>();
     private List<String> contactNo = new ArrayList<>();
     private List<String> contactPhoto = new ArrayList<>();
+    private Context context;
 
     String getName(int index) {
         return contactName.get(index);
@@ -34,10 +42,61 @@ class ContactList {
         this.contactPhoto.add(contactPhoto);
     }
 
+    // Request code for READ_CONTACTS. It can be any number > 0.
+    private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
+    private boolean fromContacts;
     // If fromContacts = true, initialize from phone contacts
     // else, initialize from internal database
     ContactList(Context context, boolean fromContacts) {
+        this.context = context;
+        this.fromContacts = fromContacts;
         Log.d("ContactList Constructor", "fromContactts: " + Boolean.toString(fromContacts));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions((Activity)context, new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
+        } else {
+            initializeContacts();
+        }
+    }
+
+    int size() {
+        return contactName.size();
+    }
+
+    void SaveContactList(Context context, ListView listView) {
+        SavedContactsDbHelper dbHelper = new SavedContactsDbHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.execSQL("DELETE FROM " + SavedContactsContract.ContactEntry.TABLE_NAME);
+        for (int i = 0; i < this.size(); i++) {
+            boolean save = false;
+            if (listView == null) {
+                save = true;
+            } else {
+                if (((ContactsArrayAdapter)listView.getAdapter()).checkedItems.contains(i)) {
+                    save = true;
+                }
+            }
+            if (save) {
+                ContentValues values = new ContentValues();
+                values.put(SavedContactsContract.ContactEntry.COLUMN_NAME_NAME, contactName.get(i));
+                values.put(SavedContactsContract.ContactEntry.COLUMN_NAME_PHONE, contactNo.get(i));
+                db.insert(SavedContactsContract.ContactEntry.TABLE_NAME, null, values);
+            }
+        }
+        db.close();
+    }
+
+    void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST_READ_CONTACTS) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show();
+                initializeContacts();
+            } else {
+                Toast.makeText(context, "Until you grant the permission, we cannot display the names", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void initializeContacts() {
         if (fromContacts) {
             Cursor cursor = context.getContentResolver().query(
                     ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
@@ -81,32 +140,5 @@ class ContactList {
             }
             db.close();
         }
-    }
-
-    int size() {
-        return contactName.size();
-    }
-
-    void SaveContactList(Context context, ListView listView) {
-        SavedContactsDbHelper dbHelper = new SavedContactsDbHelper(context);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.execSQL("DELETE FROM " + SavedContactsContract.ContactEntry.TABLE_NAME);
-        for (int i = 0; i < this.size(); i++) {
-            boolean save = false;
-            if (listView == null) {
-                save = true;
-            } else {
-                if (((ContactsArrayAdapter)listView.getAdapter()).checkedItems.contains(i)) {
-                    save = true;
-                }
-            }
-            if (save) {
-                ContentValues values = new ContentValues();
-                values.put(SavedContactsContract.ContactEntry.COLUMN_NAME_NAME, contactName.get(i));
-                values.put(SavedContactsContract.ContactEntry.COLUMN_NAME_PHONE, contactNo.get(i));
-                db.insert(SavedContactsContract.ContactEntry.TABLE_NAME, null, values);
-            }
-        }
-        db.close();
     }
 }

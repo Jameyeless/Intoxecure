@@ -5,6 +5,7 @@
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
     <application
         android:allowBackup="true"
@@ -24,7 +25,9 @@
         </activity>
         <activity android:name=".MainActivity" />
 
-        <service android:name=".IntoxecureService" />
+        <service android:name=".IntoxecureService"
+            android:exported="true"
+            android:enabled="true"/>
 
         <activity
             android:name=".SettingsActivity"

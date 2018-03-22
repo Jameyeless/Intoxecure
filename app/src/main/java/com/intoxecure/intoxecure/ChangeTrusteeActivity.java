@@ -52,4 +52,9 @@ public class ChangeTrusteeActivity extends AppCompatActivity {
         super.onPause();
         contactList.SaveContactList(this, listView);
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        contactList.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 }

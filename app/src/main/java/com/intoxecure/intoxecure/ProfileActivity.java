@@ -41,4 +41,9 @@ public class ProfileActivity extends AppCompatActivity {
             firstOpen = false;
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        contactList.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 }
