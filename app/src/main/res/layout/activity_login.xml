@@ -4,9 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.intoxecure.intoxecure.LoginActivity">
-    <!--  -->
-    <!-- android:background="@drawable/gradient2" -->
+    tools:context="com.intoxecure.intoxecure.LoginActivity"
+    android:background="@drawable/gradient2">
 
     <ImageView
         android:id="@+id/logo"
@@ -16,7 +15,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="46dp"
         android:contentDescription="@string/app_name"
-        app:srcCompat="@drawable/intoxecure_logo_v1" />
+        app:srcCompat="@drawable/intoxecure_logo_v3" />
 
     <EditText
         android:id="@+id/editText2"

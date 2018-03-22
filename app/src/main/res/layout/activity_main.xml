@@ -2,8 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
-    <!-- android:background="@drawable/gradient"  -->
+    android:background="@drawable/gradient">
 
     <Button
         android:id="@+id/button2"
@@ -78,6 +77,6 @@
         android:layout_alignStart="@+id/toggleButton"
         android:layout_marginTop="19dp"
         android:contentDescription="@string/app_name"
-        android:src="@drawable/intoxecure_logo_v1" />
+        android:src="@drawable/intoxecure_logo_v3" />
 
 </RelativeLayout>
