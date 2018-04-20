@@ -21,10 +21,15 @@ public class IntoxecureService extends Service implements SensorEventListener {
     public static boolean IS_SERVICE_RUNNING = false;
     private static Notification notification;
     private static final int MIN_REFRESH_TIME = 2000;
-    public static long mLastRefreshTime;
+    public static long accelOldTime;
+    public static long accelCurTime;
     private static SensorManager sensorManager;
+    private static Sensor stepDetector;
+    private static Sensor accelerometer;
     public static double acceleration;
     private static Toast toast;
+    private static long stepOldTime;
+    private static long stepCurTime;
 
     @Override
     public void onCreate() {
@@ -65,6 +70,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
             Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
             startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, notification);
             registerListener();
+            stepCurTime = System.currentTimeMillis();
             toast = Toast.makeText(getApplicationContext(), null, Toast.LENGTH_SHORT);
         } else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
             Log.i(LOG_TAG, "Received Stop Foreground Intent");
@@ -95,26 +101,33 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        float x = event.values[0];
-        float y = event.values[1];
-        float z = event.values[2];
-        acceleration = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
-        Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
+        if (event.sensor == accelerometer) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+            acceleration = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
+            Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
 
-        // Workaround for unexpected process termination during idle state
-        long curTime = System.currentTimeMillis();
-        if ((curTime - mLastRefreshTime) > MIN_REFRESH_TIME) {
-            mLastRefreshTime = curTime;
-            toast.cancel();
-            toast.show();
+            // Workaround for unexpected process termination during idle state
+            accelCurTime = System.currentTimeMillis();
+            if ((accelCurTime - accelOldTime) > MIN_REFRESH_TIME) {
+                accelOldTime = accelCurTime;
+                toast.cancel();
+                toast.show();
+            }
+        } else if (event.sensor == stepDetector) {
+            stepOldTime = stepCurTime;
+            stepCurTime = System.currentTimeMillis();
+            Toast.makeText(this, Long.toString(stepCurTime-stepOldTime), Toast.LENGTH_SHORT).show();
         }
     }
 
     private void registerListener() {
-        sensorManager.registerListener(this,
-                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_FASTEST
-        );
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        stepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, stepDetector, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     private void unregisterListener() {
