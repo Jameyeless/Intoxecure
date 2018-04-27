@@ -29,8 +29,8 @@ public class IntoxecureService extends Service implements SensorEventListener {
     private static Toast toast;
     private static long stepOldTime;
     private static long stepCurTime;
-    private static int threshold = 3;
 
+    private static int threshold;
     private static WeightedAverage Ave;
     private static double aveTime;
     private static double tuning;
@@ -114,7 +114,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
         if (event.sensor == stepCounter) {
             stepOldTime = stepCurTime;
             stepCurTime = System.currentTimeMillis();
-            computeAverage(stepCurTime);
+            computeAverage();
             Toast.makeText(this, Long.toString(stepCurTime-stepOldTime), Toast.LENGTH_SHORT).show();
 
         }
@@ -130,17 +130,20 @@ public class IntoxecureService extends Service implements SensorEventListener {
         sensorManager.unregisterListener(this);
     }
 
-    private synchronized void computeAverage(long currTime) {
+    private synchronized void computeAverage() {
         double k;
         aveTime = Ave.compute(stepCurTime, tuning);
         movingAverage.removeFirst();
         movingAverage.add(aveTime);
         k = movingAverage.peek();
+
+        //Test threshold
         for (Double number : movingAverage) {
-            if(number > (k +0.2)){
+            if(number < (k + 0.5) && number > (k - 0.5)){
                 threshold++;
             }
         }
+
         if (threshold>=3){
             //send message
             Toast.makeText(this, "NOTIFICATION", Toast.LENGTH_LONG).show();

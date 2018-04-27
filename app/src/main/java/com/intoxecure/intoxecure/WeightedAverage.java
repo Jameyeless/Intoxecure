@@ -3,8 +3,8 @@ package com.intoxecure.intoxecure;
 
 
 public class WeightedAverage {
-    private Double oldValue;
-    private double aveVal;
+    private static Double oldValue;
+    private static double aveVal;
 
     public double compute(long currTime, double alpha){
         aveVal = Average(currTime, alpha);
