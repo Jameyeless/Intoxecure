@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_entries_sensor_type">
+        <item>Accelerometer</item>
+        <item>Step Detector</item>
+        <item>Step Counter</item>
+    </string-array>
+    <string-array name="pref_values_sensor_type">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+</resources>

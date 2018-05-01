@@ -4,7 +4,7 @@
  * Licensed under the MIT License (see LICENSE.txt)
  */
 
-package net.jayschwa.android.preference;
+package com.intoxecure.intoxecure;
 
 import android.content.Context;
 import android.content.res.TypedArray;

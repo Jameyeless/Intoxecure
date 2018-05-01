@@ -12,10 +12,17 @@
 <PreferenceCategory
     android:title="@string/pref_sensor_title"
     android:key="pref_key_sensor_settings">
-    <net.jayschwa.android.preference.SliderPreference
+    <com.intoxecure.intoxecure.SliderPreference
         android:key="pref_key_sensor_sensitivity"
         android:title="@string/pref_title_sensor_sensitivity"
         android:dialogTitle="@string/pref_title_sensor_sensitivity"
-        android:defaultValue="@string/pref_default_sensor_sensitivity" />
+        android:defaultValue="@string/pref_default_sensor_sensitivity"
+        android:summary="@string/pref_summary_sensor_sensitivity"/>
+    <ListPreference
+        android:key="pref_key_sensor_type"
+        android:summary="@string/pref_summary_sensor_type"
+        android:title="@string/pref_title_sensor_type"
+        android:entries="@array/pref_entries_sensor_type"
+        android:entryValues="@array/pref_values_sensor_type" />
 </PreferenceCategory>
 </PreferenceScreen>
