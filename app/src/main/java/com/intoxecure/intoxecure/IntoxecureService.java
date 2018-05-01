@@ -16,20 +16,21 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import static java.lang.Math.sqrt;
+
 public class IntoxecureService extends Service implements SensorEventListener {
     private static final String LOG_TAG = "ForegroundService";
     public static boolean IS_SERVICE_RUNNING = false;
     private static Notification notification;
-    private static final int MIN_REFRESH_TIME = 2000;
-    public static long accelOldTime;
-    public static long accelCurTime;
     private static SensorManager sensorManager;
     private static Sensor stepDetector;
     private static Sensor accelerometer;
     public static double acceleration;
-    private static Toast toast;
     private static long stepOldTime;
     private static long stepCurTime;
+    private static double X[] = {0, 1, 2, 3, 4, 5, 6, 7};
+    private static double Y[] = {7, 6, 5, 4, 3, 2, 1, 0};
+    private static double Z[] = new double[15];
 
     @Override
     public void onCreate() {
@@ -71,7 +72,8 @@ public class IntoxecureService extends Service implements SensorEventListener {
             startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, notification);
             registerListener();
             stepCurTime = System.currentTimeMillis();
-            toast = Toast.makeText(getApplicationContext(), null, Toast.LENGTH_SHORT);
+            XCorr xCorr = new XCorr(8);
+            xCorr.run();
         } else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
             Log.i(LOG_TAG, "Received Stop Foreground Intent");
             stopForeground(true);
@@ -105,16 +107,8 @@ public class IntoxecureService extends Service implements SensorEventListener {
             float x = event.values[0];
             float y = event.values[1];
             float z = event.values[2];
-            acceleration = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
+            acceleration = sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
             Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
-
-            // Workaround for unexpected process termination during idle state
-            accelCurTime = System.currentTimeMillis();
-            if ((accelCurTime - accelOldTime) > MIN_REFRESH_TIME) {
-                accelOldTime = accelCurTime;
-                toast.cancel();
-                toast.show();
-            }
         } else if (event.sensor == stepDetector) {
             stepOldTime = stepCurTime;
             stepCurTime = System.currentTimeMillis();
@@ -132,5 +126,44 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
     private void unregisterListener() {
         sensorManager.unregisterListener(this);
+    }
+
+    // Threaded fft
+    private class XCorr implements Runnable{
+        int N;
+        double coeff;
+
+        XCorr(int n) {
+            this.N = n;
+        }
+
+        private void xCorr(double[] x, double[] y, double[] z) {
+            coeff = 1/(Math.sqrt(R(x,x,0)*R(y,y,0)));
+            for (int i=0; i<(2*N-1); i++) {
+                z[i] = R(x,y,i-N+1)*coeff;
+            }
+        }
+
+        private double R(double[] x, double[] y, int m) {
+            double ret_val;
+
+            if (m<0) {
+                return R(y,x,-m);
+            } else {
+                ret_val = 0;
+                for (int i=0; i<(N-m); i++) {
+                    ret_val += x[i+m]*y[i];
+                }
+                return ret_val;
+            }
+        }
+
+        @Override
+        public void run() {
+            this.xCorr(X,Y,Z);
+            for (int i=0; i<15; i++) {
+                Log.d("Z["+Integer.toString(i)+"]", Double.toString(Z[i]));
+            }
+        }
     }
 }

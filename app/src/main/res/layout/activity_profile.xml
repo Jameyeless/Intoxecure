@@ -83,7 +83,7 @@
 
     <ListView
         android:id="@+id/trusteeListView"
-        android:layout_width="361dp"
+        android:layout_width="396dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
