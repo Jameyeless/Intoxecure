@@ -31,7 +31,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
     private static double X[] = {0, 1, 2, 3, 4, 5, 6, 7};
     private static double Y[] = {7, 6, 5, 4, 3, 2, 1, 0};
     private static double Z[] = new double[15];
-    private static double A[];
+
     @Override
     public void onCreate() {
         super.onCreate();
