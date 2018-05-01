@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceCategory
+    android:title="@string/pref_sms_title"
+    android:key="pref_key_sms_settings">
+    <CheckBoxPreference
+        android:key="pref_key_enable_sms"
+        android:summary="@string/pref_summary_enable_sms"
+        android:title="@string/pref_title_enable_sms"
+        android:defaultValue="false"/>
+</PreferenceCategory>
+<PreferenceCategory
+    android:title="@string/pref_sensor_title"
+    android:key="pref_key_sensor_settings">
+    <net.jayschwa.android.preference.SliderPreference
+        android:key="pref_key_sensor_sensitivity"
+        android:title="@string/pref_title_sensor_sensitivity"
+        android:dialogTitle="@string/pref_title_sensor_sensitivity"
+        android:defaultValue="@string/pref_default_sensor_sensitivity" />
+</PreferenceCategory>
+</PreferenceScreen>
