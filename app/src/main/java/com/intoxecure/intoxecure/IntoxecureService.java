@@ -118,11 +118,12 @@ public class IntoxecureService extends Service implements SensorEventListener {
             stepOldTime = stepCurTime;
             stepCurTime = System.currentTimeMillis();
             computeAverage();
+            Log.i(LOG_TAG,  Long.toString(stepCurTime-stepOldTime));
         }
     }
 
     private void registerListener() {
-        stepCounter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        stepCounter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
         sensorManager.registerListener(this, stepCounter, SensorManager.SENSOR_DELAY_FASTEST);
     }
@@ -154,7 +155,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
             threshold = 0;
         }
 
-        if((stepCurTime - stepOldTime) >= 3000)
+        if((stepCurTime - stepOldTime) >= 2000)
             threshold = 0;
         Toast.makeText(this, Integer.toString(threshold), Toast.LENGTH_SHORT).show();
 
