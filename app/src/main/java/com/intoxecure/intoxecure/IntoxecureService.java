@@ -152,7 +152,9 @@ public class IntoxecureService extends Service implements SensorEventListener {
             Toast.makeText(this, "NOTIFICATION", Toast.LENGTH_LONG).show();
         }
         threshold = 0;
+
         Toast.makeText(this, int.toString(threshold), Toast.LENGTH_SHORT).show();
+
     }
 
 
