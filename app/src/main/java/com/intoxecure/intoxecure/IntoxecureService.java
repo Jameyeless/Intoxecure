@@ -154,11 +154,9 @@ public class IntoxecureService extends Service implements SensorEventListener {
             threshold = 0;
         }
 
-        if((stepCurTime - stepOldTime) >= 5000)
+        if((stepCurTime - stepOldTime) >= 3000)
             threshold = 0;
         Toast.makeText(this, Integer.toString(threshold), Toast.LENGTH_SHORT).show();
-
-
 
     }
 
