@@ -15,21 +15,26 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
+import java.util.ArrayDeque;
+
+import com.intoxecure.intoxecure.WeightedAverage;
+import java.lang.Iterable;
 
 public class IntoxecureService extends Service implements SensorEventListener {
     private static final String LOG_TAG = "ForegroundService";
     public static boolean IS_SERVICE_RUNNING = false;
     private static Notification notification;
-    private static final int MIN_REFRESH_TIME = 2000;
-    public static long accelOldTime;
-    public static long accelCurTime;
     private static SensorManager sensorManager;
-    private static Sensor stepDetector;
-    private static Sensor accelerometer;
-    public static double acceleration;
+    private static Sensor stepCounter;
     private static Toast toast;
     private static long stepOldTime;
     private static long stepCurTime;
+
+    private static int threshold;
+    private static WeightedAverage Ave;
+    private static double aveTime;
+    private static double tuning;
+    private static ArrayDeque<Double> movingAverage = new ArrayDeque<>(3);
 
     @Override
     public void onCreate() {
@@ -61,6 +66,14 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
         // Prepare sensor
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        // Prepare external classes and tuning parameter
+        Ave = new WeightedAverage();
+        tuning = 0.2;
+        movingAverage.add(0.0);
+        movingAverage.add(0.0);
+        movingAverage.add(0.0);
+
     }
 
     @Override
@@ -101,36 +114,52 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor == accelerometer) {
-            float x = event.values[0];
-            float y = event.values[1];
-            float z = event.values[2];
-            acceleration = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
-            Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
-
-            // Workaround for unexpected process termination during idle state
-            accelCurTime = System.currentTimeMillis();
-            if ((accelCurTime - accelOldTime) > MIN_REFRESH_TIME) {
-                accelOldTime = accelCurTime;
-                toast.cancel();
-                toast.show();
-            }
-        } else if (event.sensor == stepDetector) {
+        if (event.sensor == stepCounter) {
             stepOldTime = stepCurTime;
             stepCurTime = System.currentTimeMillis();
-            Toast.makeText(this, Long.toString(stepCurTime-stepOldTime), Toast.LENGTH_SHORT).show();
+            computeAverage();
+            Log.i(LOG_TAG,  Long.toString(stepCurTime-stepOldTime));
         }
     }
 
     private void registerListener() {
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        stepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+        stepCounter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        sensorManager.registerListener(this, stepDetector, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, stepCounter, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     private void unregisterListener() {
         sensorManager.unregisterListener(this);
     }
+
+    private synchronized void computeAverage() {
+        double k;
+        aveTime = Ave.compute(stepCurTime, tuning);
+        movingAverage.removeFirst();
+        movingAverage.add(aveTime);
+        k = movingAverage.peek();
+
+        //Test threshold
+        for (Double number : movingAverage) {
+            //Toast.makeText(this, Double.toString(number), Toast.LENGTH_SHORT).show();
+            Log.i(LOG_TAG, "Data:");
+            Log.i(LOG_TAG, Double.toString(number));
+            if((number < (k+0.5)) && (number > (k-0.5))){
+                threshold++;
+            }
+        }
+
+        if (threshold>=3){
+            //send message
+            Toast.makeText(this, "NOTIFICATION", Toast.LENGTH_LONG).show();
+            threshold = 0;
+        }
+
+        if((stepCurTime - stepOldTime) >= 2000)
+            threshold = 0;
+        Toast.makeText(this, Integer.toString(threshold), Toast.LENGTH_SHORT).show();
+
+    }
+
+
 }
