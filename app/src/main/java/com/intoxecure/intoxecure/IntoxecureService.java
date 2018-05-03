@@ -147,9 +147,8 @@ public class IntoxecureService extends Service implements SensorEventListener {
         if (threshold>=3){
             //send message
             Toast.makeText(this, "NOTIFICATION", Toast.LENGTH_LONG).show();
-        } else {
-            threshold = 0;
         }
+        threshold = 0;
     }
 
 
