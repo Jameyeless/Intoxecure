@@ -1,11 +1,17 @@
 package com.intoxecure.intoxecure;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,6 +19,8 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,6 +28,8 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 
 public class IntoxecureService extends Service implements SensorEventListener {
+    static final String SENT_BROADCAST = "SMS_SENT";
+    static final String DELIVERED_BROADCAST = "SMS_DELIVERED";
     private static final String LOG_TAG = "ForegroundService";
     public static boolean IS_SERVICE_RUNNING = false;
     private static Notification notification;
@@ -33,6 +43,10 @@ public class IntoxecureService extends Service implements SensorEventListener {
     private static double sigmaDeltaTime, sigmaDeltaTimeAlpha = 0.5;
     private static double expMean, expMeanAlpha = 0.125;
     private static int fault = 0;
+    private static PendingIntent pendSend, pendDeliver;
+    private static SmsManager sms;
+    private static boolean smsPermission;
+
 
     @Override
     public void onCreate() {
@@ -66,6 +80,20 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
         // Prepare sensor
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        // sms manager
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+            registerReceiver(sentReceiver, new IntentFilter(SENT_BROADCAST));
+            registerReceiver(deliveredReceiver, new IntentFilter(DELIVERED_BROADCAST));
+
+            pendSend = PendingIntent.getBroadcast(this, 0, new Intent(SENT_BROADCAST), 0);
+            pendDeliver = PendingIntent.getBroadcast(this, 0, new Intent(DELIVERED_BROADCAST), 0);
+
+            sms = SmsManager.getDefault();
+            smsPermission = true;
+        } else {
+            smsPermission = false;
+        }
     }
 
     @Override
@@ -131,6 +159,17 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
                 if (fault > 5) {
                     // TODO: send sms
+                    if (smsPermission) {
+                        ContactList contactList = new ContactList(this, false);
+                        ListIterator<String> iterator = contactList.contactNo.listIterator();
+                        while (iterator.hasNext())
+                            sms.sendTextMessage(iterator.next(),
+                                    null, "You're friend [insert name] is probably " +
+                                            "drunk. Maybe you should check on him on this address",
+                                    pendSend,
+                                    pendDeliver);
+                    }
+
                     Log.d("Lasing ka pre", "UWI NA UY");
                     fault = 0;
                 }
@@ -170,4 +209,43 @@ public class IntoxecureService extends Service implements SensorEventListener {
     private void unregisterListener() {
         sensorManager.unregisterListener(this);
     }
+
+    BroadcastReceiver sentReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (getResultCode()) {
+                case Activity.RESULT_OK:
+                    Toast.makeText(getBaseContext(), "SMS sent", Toast.LENGTH_SHORT).show();
+                    break;
+                case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                    Toast.makeText(getBaseContext(), "General Failure", Toast.LENGTH_SHORT).show();
+                    break;
+                case SmsManager.RESULT_ERROR_NO_SERVICE:
+                    Toast.makeText(getBaseContext(), "No Service", Toast.LENGTH_SHORT).show();
+                    break;
+                case SmsManager.RESULT_ERROR_NULL_PDU:
+                    Toast.makeText(getBaseContext(), "Null PDU", Toast.LENGTH_SHORT).show();
+                    break;
+                case SmsManager.RESULT_ERROR_RADIO_OFF:
+                    Toast.makeText(getBaseContext(), "Radio off", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+
+            unregisterReceiver(this);
+        }
+    };
+    BroadcastReceiver deliveredReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (getResultCode()) {
+                case Activity.RESULT_OK:
+                    Toast.makeText(getBaseContext(), "SMS delivered", Toast.LENGTH_SHORT).show();
+                    break;
+                case Activity.RESULT_CANCELED:
+                    Toast.makeText(getBaseContext(), "SMS was not delivered", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+            unregisterReceiver(this);
+        }
+    };
 }
