@@ -16,6 +16,9 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.LinkedList;
+import java.util.ListIterator;
+
 public class IntoxecureService extends Service implements SensorEventListener {
     private static final String LOG_TAG = "ForegroundService";
     public static boolean IS_SERVICE_RUNNING = false;
@@ -23,8 +26,13 @@ public class IntoxecureService extends Service implements SensorEventListener {
     private static SensorManager sensorManager;
     private static Sensor accelerometer;
     public static double acceleration;
-    private static long count;
-    private static StepDetector accelStepDetector;
+    private static long count = 0;
+    private static long countTime;
+    private static StepDetector accelStepDetector = new StepDetector();
+    private static LinkedList<Long> countTimeDelta = new LinkedList<>();
+    private static double sigmaDeltaTime, sigmaDeltaTimeAlpha = 0.5;
+    private static double expMean, expMeanAlpha = 0.125;
+    private static int fault = 0;
 
     @Override
     public void onCreate() {
@@ -58,10 +66,6 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
         // Prepare sensor
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
-        accelStepDetector = new StepDetector();
-
-        count = 0;
     }
 
     @Override
@@ -110,9 +114,50 @@ public class IntoxecureService extends Service implements SensorEventListener {
             //Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
 
             long countTemp = accelStepDetector.Iterate(acceleration);
+            long countTimeTemp = event.timestamp;
             if (count != countTemp) {
                 count = countTemp;
+
+                long timeDeltaTemp = countTimeTemp-countTime;
+                if (countTimeDelta.size() == 1)
+                    expMean = timeDeltaTemp;
+                else if (countTimeDelta.size() > 1)
+                    expMean = expMean*(1-expMeanAlpha) + timeDeltaTemp*expMeanAlpha;
+
+                if (timeDeltaTemp > expMean + sigmaDeltaTime*sigmaDeltaTimeAlpha || timeDeltaTemp < expMean - sigmaDeltaTime*sigmaDeltaTimeAlpha)
+                    fault += 1;
+                if (timeDeltaTemp > 10e9)
+                    fault = 0;
+
+                if (fault > 5) {
+                    // TODO: send sms
+                    Log.d("Lasing ka pre", "UWI NA UY");
+                    fault = 0;
+                }
+
+                // Add new time delta, and recompute for standard dev
+                while (countTimeDelta.size() >= 25) {
+                    countTimeDelta.poll();
+                }
+                countTimeDelta.offer(countTimeTemp-countTime);
+                countTime = countTimeTemp;
+                ListIterator<Long> iterator = countTimeDelta.listIterator();
+                double mean = 0;
+                while (iterator.hasNext())
+                    mean += iterator.next();
+                mean /= countTimeDelta.size();
+                iterator = countTimeDelta.listIterator();
+                sigmaDeltaTime = 0;
+                while (iterator.hasNext())
+                    sigmaDeltaTime += Math.pow(iterator.next(),2);
+                sigmaDeltaTime = Math.sqrt(sigmaDeltaTime/countTimeDelta.size() - Math.pow(mean,2));
+
                 Log.d("count", Long.toString(count));
+                Log.d("fault", Integer.toString(fault));
+                Log.d("average", Double.toString(expMean));
+                Log.d("std dev", Double.toString(sigmaDeltaTime));
+                Log.d("timeDeltaTemp", Long.toString(timeDeltaTemp));
+                Log.d("array size", Integer.toString(countTimeDelta.size()));
             }
         }
     }
