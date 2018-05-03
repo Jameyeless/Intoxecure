@@ -70,6 +70,9 @@ public class IntoxecureService extends Service implements SensorEventListener {
         // Prepare external classes and tuning parameter
         Ave = new WeightedAverage();
         tuning = 0.2;
+        movingAverage.add(0.0);
+        movingAverage.add(0.0);
+        movingAverage.add(0.0);
 
     }
 
