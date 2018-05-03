@@ -20,4 +20,5 @@ public class WeightedAverage {
         oldValue = newValue;
         return newValue;
     }
+
 }

@@ -16,7 +16,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 import java.util.ArrayDeque;
-
+import java.lang.Math;
 import com.intoxecure.intoxecure.WeightedAverage;
 import java.lang.Iterable;
 
@@ -134,17 +134,19 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
     private synchronized void computeAverage() {
         double k;
+        double stdDev = computeStdDev();
+        if((stepCurTime - stepOldTime) >= 1000)
+            threshold = 0;
+
         aveTime = Ave.compute(stepCurTime, tuning);
         movingAverage.removeFirst();
         movingAverage.add(aveTime);
-        k = movingAverage.peek();
-
         //Test threshold
         for (Double number : movingAverage) {
             //Toast.makeText(this, Double.toString(number), Toast.LENGTH_SHORT).show();
             Log.i(LOG_TAG, "Data:");
             Log.i(LOG_TAG, Double.toString(number));
-            if((number < (k+0.5)) && (number > (k-0.5))){
+            if((number < (0.8*stdDev)) && (number > (1.2*stdDev))){
                 threshold++;
             }
         }
@@ -155,11 +157,22 @@ public class IntoxecureService extends Service implements SensorEventListener {
             threshold = 0;
         }
 
-        if((stepCurTime - stepOldTime) >= 2000)
-            threshold = 0;
         Toast.makeText(this, Integer.toString(threshold), Toast.LENGTH_SHORT).show();
 
     }
 
+    private static double computeStdDev() {
+        double sum = 0;
+        double standardDev = 0;
+        for (double num : movingAverage) {
+            sum += num;
+        }
 
+        double mean = sum / (movingAverage.size());
+
+        for (double num : movingAverage) {
+            standardDev += Math.pow((num - mean), 2);
+        }
+        return Math.sqrt(standardDev / (movingAverage.size()));
+    }
 }
