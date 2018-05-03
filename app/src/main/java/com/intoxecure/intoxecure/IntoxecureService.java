@@ -118,7 +118,6 @@ public class IntoxecureService extends Service implements SensorEventListener {
             stepOldTime = stepCurTime;
             stepCurTime = System.currentTimeMillis();
             computeAverage();
-
         }
     }
 
@@ -142,7 +141,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
         //Test threshold
         for (Double number : movingAverage) {
             //Toast.makeText(this, Double.toString(number), Toast.LENGTH_SHORT).show();
-            if(number < (k) && number > (k)){
+            if((number < (k+0.1)) && (number > (k-0.1))){
                 threshold++;
             }
         }
@@ -150,9 +149,11 @@ public class IntoxecureService extends Service implements SensorEventListener {
         if (threshold>=3){
             //send message
             Toast.makeText(this, "NOTIFICATION", Toast.LENGTH_LONG).show();
+            threshold = 0;
         }
-        threshold = 0;
 
+        if((stepCurTime - stepOldTime) >= 5000)
+            threshold = 0;
         Toast.makeText(this, Integer.toString(threshold), Toast.LENGTH_SHORT).show();
 
     }
