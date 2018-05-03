@@ -142,6 +142,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
         //Test threshold
         for (Double number : movingAverage) {
+            Toast.makeText(this, Double.toString(number), Toast.LENGTH_SHORT).show();
             if(number < (k + 0.5) && number > (k - 0.5)){
                 threshold++;
             }
