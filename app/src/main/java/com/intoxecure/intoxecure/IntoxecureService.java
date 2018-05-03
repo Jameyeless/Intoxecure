@@ -20,16 +20,11 @@ public class IntoxecureService extends Service implements SensorEventListener {
     private static final String LOG_TAG = "ForegroundService";
     public static boolean IS_SERVICE_RUNNING = false;
     private static Notification notification;
-    private static final int MIN_REFRESH_TIME = 2000;
-    public static long accelOldTime;
-    public static long accelCurTime;
     private static SensorManager sensorManager;
-    private static Sensor stepDetector;
     private static Sensor accelerometer;
     public static double acceleration;
-    private static Toast toast;
-    private static long stepOldTime;
-    private static long stepCurTime;
+    private static long count;
+    private static StepDetector accelStepDetector;
 
     @Override
     public void onCreate() {
@@ -50,32 +45,38 @@ public class IntoxecureService extends Service implements SensorEventListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
             notification = nBuilder.build();
         else
+            //noinspection deprecation
             notification = nBuilder.getNotification();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channelID, name, NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription(description);
             NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.createNotificationChannel(channel);
+            if (notificationManager != null)
+                notificationManager.createNotificationChannel(channel);
         }
 
         // Prepare sensor
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        accelStepDetector = new StepDetector();
+
+        count = 0;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_ACTION)) {
-            Log.i(LOG_TAG, "Received Start Foreground Intent ");
-            Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
-            startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, notification);
-            registerListener();
-            stepCurTime = System.currentTimeMillis();
-            toast = Toast.makeText(getApplicationContext(), null, Toast.LENGTH_SHORT);
-        } else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
-            Log.i(LOG_TAG, "Received Stop Foreground Intent");
-            stopForeground(true);
-            stopSelf();
+        if (intent.getAction() != null) {
+            if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_ACTION)) {
+                Log.i(LOG_TAG, "Received Start Foreground Intent ");
+                Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
+                startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, notification);
+                registerListener();
+            } else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
+                Log.i(LOG_TAG, "Received Stop Foreground Intent");
+                stopForeground(true);
+                stopSelf();
+            }
         }
         return Service.START_REDELIVER_INTENT;
     }
@@ -105,29 +106,20 @@ public class IntoxecureService extends Service implements SensorEventListener {
             float x = event.values[0];
             float y = event.values[1];
             float z = event.values[2];
-            acceleration = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
-            Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
+            acceleration = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+            //Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
 
-            // Workaround for unexpected process termination during idle state
-            accelCurTime = System.currentTimeMillis();
-            if ((accelCurTime - accelOldTime) > MIN_REFRESH_TIME) {
-                accelOldTime = accelCurTime;
-                toast.cancel();
-                toast.show();
+            long countTemp = accelStepDetector.Iterate(acceleration);
+            if (count != countTemp) {
+                count = countTemp;
+                Log.d("count", Long.toString(count));
             }
-        } else if (event.sensor == stepDetector) {
-            stepOldTime = stepCurTime;
-            stepCurTime = System.currentTimeMillis();
-            Toast.makeText(this, Long.toString(stepCurTime-stepOldTime), Toast.LENGTH_SHORT).show();
         }
     }
 
     private void registerListener() {
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        stepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
-
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        sensorManager.registerListener(this, stepDetector, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     private void unregisterListener() {
