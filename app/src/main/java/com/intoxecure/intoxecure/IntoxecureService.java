@@ -45,7 +45,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
     private static int fault = 0;
     private static PendingIntent pendSend, pendDeliver;
     private static SmsManager sms;
-    private static boolean smsPermission;
+    private static ContactList contactList;
 
 
     @Override
@@ -82,18 +82,16 @@ public class IntoxecureService extends Service implements SensorEventListener {
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         // sms manager
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
-            registerReceiver(sentReceiver, new IntentFilter(SENT_BROADCAST));
-            registerReceiver(deliveredReceiver, new IntentFilter(DELIVERED_BROADCAST));
+        registerReceiver(sentReceiver, new IntentFilter(SENT_BROADCAST));
+        registerReceiver(deliveredReceiver, new IntentFilter(DELIVERED_BROADCAST));
 
-            pendSend = PendingIntent.getBroadcast(this, 0, new Intent(SENT_BROADCAST), 0);
-            pendDeliver = PendingIntent.getBroadcast(this, 0, new Intent(DELIVERED_BROADCAST), 0);
+        pendSend = PendingIntent.getBroadcast(this, 0, new Intent(SENT_BROADCAST), 0);
+        pendDeliver = PendingIntent.getBroadcast(this, 0, new Intent(DELIVERED_BROADCAST), 0);
 
-            sms = SmsManager.getDefault();
-            smsPermission = true;
-        } else {
-            smsPermission = false;
-        }
+        sms = SmsManager.getDefault();
+
+        // contact
+        contactList = new ContactList(this, false);
     }
 
     @Override
@@ -119,6 +117,8 @@ public class IntoxecureService extends Service implements SensorEventListener {
         Log.i(LOG_TAG, "In onDestroy");
         unregisterListener();
         Toast.makeText(this, "Service Stopped", Toast.LENGTH_SHORT).show();
+        unregisterReceiver(sentReceiver);
+        unregisterReceiver(deliveredReceiver);
     }
 
     @Override
@@ -157,18 +157,13 @@ public class IntoxecureService extends Service implements SensorEventListener {
                 if (timeDeltaTemp > 10e9)
                     fault = 0;
 
-                if (fault > 5) {
-                    // TODO: send sms
-                    if (smsPermission) {
-                        ContactList contactList = new ContactList(this, false);
-                        ListIterator<String> iterator = contactList.contactNo.listIterator();
-                        while (iterator.hasNext())
-                            sms.sendTextMessage(iterator.next(),
-                                    null, "You're friend [insert name] is probably " +
-                                            "drunk. Maybe you should check on him on this address",
-                                    pendSend,
-                                    pendDeliver);
-                    }
+                if (fault > 10) {
+                    for (String aContactNo : contactList.contactNo)
+                        sms.sendTextMessage(aContactNo,
+                                null, "You're friend [insert name] is probably " +
+                                        "drunk. Maybe you should check on him on this address",
+                                pendSend,
+                                pendDeliver);
 
                     Log.d("Lasing ka pre", "UWI NA UY");
                     fault = 0;
@@ -215,23 +210,21 @@ public class IntoxecureService extends Service implements SensorEventListener {
         public void onReceive(Context context, Intent intent) {
             switch (getResultCode()) {
                 case Activity.RESULT_OK:
-                    Toast.makeText(getBaseContext(), "SMS sent", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "SMS sent", Toast.LENGTH_LONG).show();
                     break;
                 case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                    Toast.makeText(getBaseContext(), "General Failure", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "General Failure", Toast.LENGTH_LONG).show();
                     break;
                 case SmsManager.RESULT_ERROR_NO_SERVICE:
-                    Toast.makeText(getBaseContext(), "No Service", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "No Service", Toast.LENGTH_LONG).show();
                     break;
                 case SmsManager.RESULT_ERROR_NULL_PDU:
-                    Toast.makeText(getBaseContext(), "Null PDU", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Null PDU", Toast.LENGTH_LONG).show();
                     break;
                 case SmsManager.RESULT_ERROR_RADIO_OFF:
-                    Toast.makeText(getBaseContext(), "Radio off", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Radio off", Toast.LENGTH_LONG).show();
                     break;
             }
-
-            unregisterReceiver(this);
         }
     };
     BroadcastReceiver deliveredReceiver = new BroadcastReceiver() {
@@ -239,13 +232,12 @@ public class IntoxecureService extends Service implements SensorEventListener {
         public void onReceive(Context context, Intent intent) {
             switch (getResultCode()) {
                 case Activity.RESULT_OK:
-                    Toast.makeText(getBaseContext(), "SMS delivered", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "SMS delivered", Toast.LENGTH_LONG).show();
                     break;
                 case Activity.RESULT_CANCELED:
-                    Toast.makeText(getBaseContext(), "SMS was not delivered", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "SMS was not delivered", Toast.LENGTH_LONG).show();
                     break;
             }
-            unregisterReceiver(this);
         }
     };
 }
