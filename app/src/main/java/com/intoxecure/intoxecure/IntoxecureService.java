@@ -12,6 +12,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -28,10 +29,15 @@ public class IntoxecureService extends Service implements SensorEventListener {
     public static double acceleration;
     private static long stepOldTime;
     private static long stepCurTime;
+    private AccelBasedStepDetect stepDetect;
+    private Vibrator vibrator;
+
+
+    /*
     private static double X[] = {0, 1, 2, 3, 4, 5, 6, 7};
     private static double Y[] = {7, 6, 5, 4, 3, 2, 1, 0};
     private static double Z[] = new double[15];
-
+    */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -62,6 +68,9 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
         // Prepare sensor
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        //
+        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
     }
 
     @Override
@@ -72,8 +81,9 @@ public class IntoxecureService extends Service implements SensorEventListener {
             startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, notification);
             registerListener();
             stepCurTime = System.currentTimeMillis();
-            XCorr xCorr = new XCorr(8);
-            xCorr.run();
+            stepDetect = new AccelBasedStepDetect();
+            //XCorr xCorr = new XCorr(8);
+            //xCorr.run();
         } else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
             Log.i(LOG_TAG, "Received Stop Foreground Intent");
             stopForeground(true);
@@ -107,7 +117,10 @@ public class IntoxecureService extends Service implements SensorEventListener {
             float x = event.values[0];
             float y = event.values[1];
             float z = event.values[2];
-            acceleration = sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - SensorManager.GRAVITY_EARTH;
+            acceleration = sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+            if (stepDetect.iterate(acceleration, event.timestamp) != 0)
+                vibrator.vibrate(10);
+
             Log.d("Accelerometer", "Acceleration:" + acceleration + "m/s^2");
         } else if (event.sensor == stepDetector) {
             stepOldTime = stepCurTime;
@@ -128,6 +141,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
         sensorManager.unregisterListener(this);
     }
 
+    /*
     // Threaded fft
     private class XCorr implements Runnable{
         int N;
@@ -166,4 +180,5 @@ public class IntoxecureService extends Service implements SensorEventListener {
             }
         }
     }
+    */
 }
