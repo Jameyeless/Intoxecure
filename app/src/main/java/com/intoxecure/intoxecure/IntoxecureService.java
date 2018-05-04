@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -18,8 +19,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.SharedPreferencesCompat;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -27,7 +30,7 @@ import android.widget.Toast;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-public class IntoxecureService extends Service implements SensorEventListener {
+public class IntoxecureService extends Service implements SensorEventListener,SharedPreferences.OnSharedPreferenceChangeListener {
     static final String SENT_BROADCAST = "SMS_SENT";
     static final String DELIVERED_BROADCAST = "SMS_DELIVERED";
     private static final String LOG_TAG = "ForegroundService";
@@ -46,6 +49,9 @@ public class IntoxecureService extends Service implements SensorEventListener {
     private static PendingIntent pendSend, pendDeliver;
     private static SmsManager sms;
     private static ContactList contactList;
+    private static boolean smsEnabled;
+    private static float sensorSensitivity;
+    private static SharedPreferences preferences;
 
 
     @Override
@@ -77,6 +83,12 @@ public class IntoxecureService extends Service implements SensorEventListener {
             if (notificationManager != null)
                 notificationManager.createNotificationChannel(channel);
         }
+
+        // shared preference
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences.registerOnSharedPreferenceChangeListener(this);
+        smsEnabled = preferences.getBoolean("pref_key_enable_sms", false);
+        Log.d("smsEnabled", Boolean.toString(smsEnabled));
 
         // Prepare sensor
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -119,6 +131,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
         Toast.makeText(this, "Service Stopped", Toast.LENGTH_SHORT).show();
         unregisterReceiver(sentReceiver);
         unregisterReceiver(deliveredReceiver);
+        preferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -157,10 +170,10 @@ public class IntoxecureService extends Service implements SensorEventListener {
                 if (timeDeltaTemp > 10e9)
                     fault = 0;
 
-                if (fault > 10) {
+                if (fault > 10 && smsEnabled) {
                     for (String aContactNo : contactList.contactNo)
                         sms.sendTextMessage(aContactNo,
-                                null, "You're friend [insert name] is probably " +
+                                null, "Your friend [insert name] is probably " +
                                         "drunk. Maybe you should check on him on this address",
                                 pendSend,
                                 pendDeliver);
@@ -240,4 +253,16 @@ public class IntoxecureService extends Service implements SensorEventListener {
             }
         }
     };
+
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.d("asd",  "asd");
+        if (key.equals("pref_key_enable_sms")) {
+            smsEnabled = sharedPreferences.getBoolean("pref_key_enable_sms", false);
+            Log.d("smsEnabled", Boolean.toString(smsEnabled));
+        } else if (key.equals("pref_key_sensor_sensitivity")) {
+            sensorSensitivity = sharedPreferences.getFloat("pref_key_sensor_sensitivity", 0);
+            sigmaDeltaTimeAlpha = sensorSensitivity*1;
+            Log.d("sensitivity", Float.toString(sensorSensitivity));
+        }
+    }
 }
