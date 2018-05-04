@@ -16,12 +16,13 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 class ContactList {
-    private List<String> contactName = new ArrayList<>();
-    private List<String> contactNo = new ArrayList<>();
-    private List<String> contactPhoto = new ArrayList<>();
+    LinkedList<String> contactName = new LinkedList<>();
+    LinkedList<String> contactNo = new LinkedList<>();
+    LinkedList<String> contactPhoto = new LinkedList<>();
     private Context context;
 
     String getName(int index) {
