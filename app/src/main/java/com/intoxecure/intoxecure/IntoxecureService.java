@@ -66,6 +66,7 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
     private static final double gamma = 0.2;
     private static final int frameSize = 10;
     private static ArrayDeque<Double> movingAverage = new ArrayDeque<>(frameSize);
+    private static ArrayDeque<Long> movingSamples = new ArrayDeque<>(frameSize);
 
 
     @Override
@@ -117,6 +118,7 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
         Ave = new WeightedAverage();
         for(int i = 0; i<frameSize; i++) {
                 movingAverage.add(0.0);
+                movingSamples.add((long)0);
         }
     }
 
@@ -174,6 +176,7 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
 
                 long timeDeltaTemp = countTimeTemp-countTime;
                 computeAverage(timeDeltaTemp);
+                stdDevMethod(timeDeltaTemp);
                 if (countTimeDelta.size() == 1)
                     expMean = timeDeltaTemp;
                 else if (countTimeDelta.size() > 1)
@@ -214,11 +217,13 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
                 sigmaDeltaTime = Math.sqrt(sigmaDeltaTime/countTimeDelta.size() - Math.pow(mean,2));
 
                 Log.d("count", Long.toString(count));
+               /*
                 Log.d("fault", Integer.toString(fault));
                 Log.d("average", Double.toString(expMean));
                 Log.d("std dev", Double.toString(sigmaDeltaTime));
                 Log.d("timeDeltaTemp", Long.toString(timeDeltaTemp));
                 Log.d("array size", Integer.toString(countTimeDelta.size()));
+                */
             }
         }
     }
@@ -318,6 +323,29 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
             sigmaDeltaTimeAlpha = sensorSensitivity*1;
             Log.d("sensitivity", Float.toString(sensorSensitivity));
         }
+    }
+
+    public double stdDevMethod(long timeDeltaTemp){
+        movingSamples.removeFirst();
+        movingSamples.addLast(timeDeltaTemp);
+
+        //Standard deviation computation
+        long sum = 0;
+        double Dev = 0;
+        for (long num : movingSamples) {
+            sum += num;
+        }
+
+        double mean = sum / frameSize;
+
+        for (long num : movingSamples) {
+            Dev += Math.pow((num - mean), 2);
+        }
+        double standardDev = Math.sqrt(Dev / frameSize);
+
+        Log.d("Standard Dev Method:", Double.toString(standardDev));
+
+        return standardDev;
     }
 
 }
