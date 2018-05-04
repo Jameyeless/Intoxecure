@@ -25,6 +25,7 @@ import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
@@ -65,8 +66,8 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
     private static final double tuning = 0.2;
     private static final double gamma = 0.2;
     private static final int frameSize = 10;
-    private static ArrayDeque<Double> movingAverage = new ArrayDeque<>(frameSize);
-    private static ArrayDeque<Long> movingSamples = new ArrayDeque<>(frameSize);
+    private static LinkedList<Double> movingAverage = new LinkedList<>();
+    private static LinkedList<Long> movingSamples = new LinkedList<>();
 
 
     @Override
@@ -187,7 +188,7 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
                 if (timeDeltaTemp > 10e9)
                     fault = 0;
 
-                if (fault > 10) {
+                if (fault > 10 && smsEnabled) {
                     for (String aContactNo : contactList.contactNo)
                         sms.sendTextMessage(aContactNo,
                                 null, "You're friend [insert name] is probably " +
@@ -344,6 +345,11 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
         double standardDev = Math.sqrt(Dev / frameSize);
 
         Log.d("Standard Dev Method:", Double.toString(standardDev));
+
+        ListIterator<Long> iterator = movingSamples.listIterator();
+        while (iterator.hasNext()) {
+            Log.d("movingSamples[" + Integer.toString(iterator.nextIndex()) + "]", Long.toString(iterator.nextIndex()));
+        }
 
         return standardDev;
     }
