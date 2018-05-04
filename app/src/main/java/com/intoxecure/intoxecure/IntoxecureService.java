@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -27,7 +28,14 @@ import android.widget.Toast;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-public class IntoxecureService extends Service implements SensorEventListener {
+import java.util.ArrayDeque;
+import java.lang.Math;
+import com.intoxecure.intoxecure.WeightedAverage;
+import java.lang.Iterable;
+
+import static java.lang.Math.sqrt;
+
+public class IntoxecureService extends Service implements SensorEventListener,SharedPreferences.OnSharedPreferenceChangeListener {
     static final String SENT_BROADCAST = "SMS_SENT";
     static final String DELIVERED_BROADCAST = "SMS_DELIVERED";
     private static final String LOG_TAG = "ForegroundService";
@@ -46,6 +54,18 @@ public class IntoxecureService extends Service implements SensorEventListener {
     private static PendingIntent pendSend, pendDeliver;
     private static SmsManager sms;
     private static ContactList contactList;
+    private static boolean smsEnabled;
+    private static float sensorSensitivity;
+    private static SharedPreferences preferences;
+
+
+    private static int threshold;
+    private static WeightedAverage Ave;
+    private static double aveTime;
+    private static final double tuning = 0.2;
+    private static final double gamma = 0.2;
+    private static final int frameSize = 10;
+    private static ArrayDeque<Double> movingAverage = new ArrayDeque<>(frameSize);
 
 
     @Override
@@ -92,6 +112,12 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
         // contact
         contactList = new ContactList(this, false);
+
+        // Prepare external classes and tuning parameter
+        Ave = new WeightedAverage();
+        for(int i = 0; i<frameSize; i++) {
+                movingAverage.add(0.0);
+        }
     }
 
     @Override
@@ -147,6 +173,7 @@ public class IntoxecureService extends Service implements SensorEventListener {
                 count = countTemp;
 
                 long timeDeltaTemp = countTimeTemp-countTime;
+                computeAverage(timeDeltaTemp);
                 if (countTimeDelta.size() == 1)
                     expMean = timeDeltaTemp;
                 else if (countTimeDelta.size() > 1)
@@ -240,4 +267,57 @@ public class IntoxecureService extends Service implements SensorEventListener {
             }
         }
     };
+
+    private synchronized void computeAverage(long timeDeltaTemp) {
+        double stdDev = computeStdDev();
+        if((timeDeltaTemp) >= 2e9)
+            threshold = 0;
+
+        aveTime = Ave.compute(timeDeltaTemp, tuning);
+        movingAverage.removeFirst();
+        movingAverage.add(aveTime);
+        //Test threshold
+        for (Double number : movingAverage) {
+            //Toast.makeText(this, Double.toString(number), Toast.LENGTH_SHORT).show();
+            Log.i("EWMA", Double.toString(number));
+            if((number <= ((1-gamma)*stdDev)) || (number >= ((1+gamma)*stdDev))){
+                threshold++;
+            }
+        }
+
+        if (threshold>=10){
+            //send message
+            Toast.makeText(this, "STEP ERROR DETECTED", Toast.LENGTH_LONG).show();
+            threshold = 0;
+        }
+
+    }
+
+    private static double computeStdDev() {
+        double sum = 0;
+        double standardDev = 0;
+        for (double num : movingAverage) {
+            sum += num;
+        }
+
+        double mean = sum / (movingAverage.size());
+
+        for (double num : movingAverage) {
+            standardDev += Math.pow((num - mean), 2);
+        }
+        return Math.sqrt(standardDev / (movingAverage.size()));
+    }
+
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.d("asd",  "asd");
+        if (key.equals("pref_key_enable_sms")) {
+            smsEnabled = sharedPreferences.getBoolean("pref_key_enable_sms", false);
+            Log.d("smsEnabled", Boolean.toString(smsEnabled));
+        } else if (key.equals("pref_key_sensor_sensitivity")) {
+            sensorSensitivity = sharedPreferences.getFloat("pref_key_sensor_sensitivity", 0);
+            sigmaDeltaTimeAlpha = sensorSensitivity*1;
+            Log.d("sensitivity", Float.toString(sensorSensitivity));
+        }
+    }
+
 }
