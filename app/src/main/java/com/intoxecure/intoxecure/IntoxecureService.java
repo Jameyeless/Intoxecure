@@ -60,7 +60,7 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
     private static SharedPreferences preferences;
 
 
-    private static int threshold;
+    private static int threshold = 0;
     private static WeightedAverage Ave;
     private static double aveTime;
     private static final double tuning = 0.2;
@@ -174,19 +174,33 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
             long countTimeTemp = event.timestamp;
             if (count != countTemp) {
                 count = countTemp;
-
+                //Toast.makeText(this, "Step Detected", Toast.LENGTH_SHORT).show();
                 long timeDeltaTemp = countTimeTemp-countTime;
-                computeAverage(timeDeltaTemp);
-                stdDevMethod(timeDeltaTemp);
+                //computeAverage(timeDeltaTemp);
+                //stdDevMethod(timeDeltaTemp);
                 if (countTimeDelta.size() == 1)
                     expMean = timeDeltaTemp;
                 else if (countTimeDelta.size() > 1)
                     expMean = expMean*(1-expMeanAlpha) + timeDeltaTemp*expMeanAlpha;
 
-                if (timeDeltaTemp > expMean + sigmaDeltaTime*sigmaDeltaTimeAlpha || timeDeltaTemp < expMean - sigmaDeltaTime*sigmaDeltaTimeAlpha)
+
+                Log.d("timeDeltaTemp", Double.toString(timeDeltaTemp));
+                Log.d("sigmaDeltaTime1", Double.toString(expMean + sigmaDeltaTime*sigmaDeltaTimeAlpha));
+                Log.d("sigmaDeltaTime2", Double.toString(expMean - sigmaDeltaTime*sigmaDeltaTimeAlpha));
+
+                if (timeDeltaTemp > expMean + sigmaDeltaTime*sigmaDeltaTimeAlpha || timeDeltaTemp < expMean - sigmaDeltaTime*sigmaDeltaTimeAlpha) {
                     fault += 1;
+                    //Toast.makeText(this, "Faults: " + fault, Toast.LENGTH_SHORT).show();
+                    Log.d("Fault", Integer.toString(fault));
+                }
                 if (timeDeltaTemp > 10e9)
                     fault = 0;
+
+                if (fault > 10) {
+                    Toast.makeText(this, "Drunken State Detected", Toast.LENGTH_LONG).show();
+                    Log.d("Lasing ka pre", "UWI NA UY");
+                    fault = 0;
+                }
 
                 if (fault > 10 && smsEnabled) {
                     for (String aContactNo : contactList.contactNo)
