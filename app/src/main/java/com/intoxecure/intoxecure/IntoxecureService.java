@@ -19,6 +19,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.SmsManager;
@@ -100,6 +101,8 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
                 notificationManager.createNotificationChannel(channel);
         }
 
+
+
         // Prepare sensor
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -114,6 +117,7 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
 
         // contact
         contactList = new ContactList(this, false);
+
 
         // Prepare external classes and tuning parameter
         Ave = new WeightedAverage();
@@ -183,19 +187,20 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
                 else if (countTimeDelta.size() > 1)
                     expMean = expMean*(1-expMeanAlpha) + timeDeltaTemp*expMeanAlpha;
 
-                if (timeDeltaTemp > expMean + sigmaDeltaTime*sigmaDeltaTimeAlpha || timeDeltaTemp < expMean - sigmaDeltaTime*sigmaDeltaTimeAlpha)
+                if (timeDeltaTemp > expMean + sigmaDeltaTime/sigmaDeltaTimeAlpha || timeDeltaTemp < expMean - sigmaDeltaTime/sigmaDeltaTimeAlpha)
                     fault += 1;
                 if (timeDeltaTemp > 10e9)
                     fault = 0;
 
-                if (fault > 10 && smsEnabled) {
-                    for (String aContactNo : contactList.contactNo)
-                        sms.sendTextMessage(aContactNo,
-                                null, "You're friend [insert name] is probably " +
-                                        "drunk. Maybe you should check on him on this address",
-                                pendSend,
-                                pendDeliver);
-
+                if (fault > 3) {
+                    if (smsEnabled) {
+                        for (String aContactNo : contactList.contactNo)
+                            sms.sendTextMessage(aContactNo,
+                                    null, "You're friend [insert name] is probably " +
+                                            "drunk. Maybe you should check on him on this address",
+                                    pendSend,
+                                    pendDeliver);
+                    }
                     Log.d("Lasing ka pre", "UWI NA UY");
                     fault = 0;
                 }
@@ -218,13 +223,11 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
                 sigmaDeltaTime = Math.sqrt(sigmaDeltaTime/countTimeDelta.size() - Math.pow(mean,2));
 
                 Log.d("count", Long.toString(count));
-               /*
                 Log.d("fault", Integer.toString(fault));
                 Log.d("average", Double.toString(expMean));
                 Log.d("std dev", Double.toString(sigmaDeltaTime));
                 Log.d("timeDeltaTemp", Long.toString(timeDeltaTemp));
                 Log.d("array size", Integer.toString(countTimeDelta.size()));
-                */
             }
         }
     }
@@ -321,7 +324,7 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
             Log.d("smsEnabled", Boolean.toString(smsEnabled));
         } else if (key.equals("pref_key_sensor_sensitivity")) {
             sensorSensitivity = sharedPreferences.getFloat("pref_key_sensor_sensitivity", 0);
-            sigmaDeltaTimeAlpha = sensorSensitivity*1;
+            sigmaDeltaTimeAlpha = sensorSensitivity*10;
             Log.d("sensitivity", Float.toString(sensorSensitivity));
         }
     }
@@ -348,7 +351,7 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
 
         ListIterator<Long> iterator = movingSamples.listIterator();
         while (iterator.hasNext()) {
-            Log.d("movingSamples[" + Integer.toString(iterator.nextIndex()) + "]", Long.toString(iterator.nextIndex()));
+            Log.d("movingSamples[" + Integer.toString(iterator.nextIndex()) + "]", Long.toString(iterator.next()));
         }
 
         return standardDev;

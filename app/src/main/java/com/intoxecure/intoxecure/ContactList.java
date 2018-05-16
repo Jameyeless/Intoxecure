@@ -52,11 +52,7 @@ class ContactList {
         this.context = context;
         this.fromContacts = fromContacts;
         Log.d("ContactList Constructor", "fromContactts: " + Boolean.toString(fromContacts));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions((Activity)context, new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
-        } else {
-            initializeContacts();
-        }
+        initializeContacts();
     }
 
     int size() {
@@ -97,7 +93,7 @@ class ContactList {
         }
     }
 
-    private void initializeContacts() {
+    void initializeContacts() {
         if (fromContacts) {
             Cursor cursor = context.getContentResolver().query(
                     ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
