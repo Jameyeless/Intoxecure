@@ -180,8 +180,8 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
                 count = countTemp;
 
                 long timeDeltaTemp = countTimeTemp-countTime;
-                computeAverage(timeDeltaTemp);
-                stdDevMethod(timeDeltaTemp);
+                //computeAverage(timeDeltaTemp);
+                //stdDevMethod(timeDeltaTemp);
                 if (countTimeDelta.size() == 1)
                     expMean = timeDeltaTemp;
                 else if (countTimeDelta.size() > 1)
@@ -192,7 +192,8 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
                 if (timeDeltaTemp > 10e9)
                     fault = 0;
 
-                if (fault > 3) {
+                if (fault > 10) {
+                    Toast.makeText(this, "Drunken State Detected", Toast.LENGTH_LONG).show();
                     if (smsEnabled) {
                         for (String aContactNo : contactList.contactNo)
                             sms.sendTextMessage(aContactNo,
