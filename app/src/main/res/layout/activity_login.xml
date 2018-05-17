@@ -18,7 +18,7 @@
         app:srcCompat="@drawable/intoxecure_logo_v3" />
 
     <EditText
-        android:id="@+id/editText2"
+        android:id="@+id/username_box"
         android:layout_width="200dp"
         android:layout_height="30dp"
         android:layout_below="@+id/logo"
@@ -36,9 +36,9 @@
         android:id="@+id/editText3"
         android:layout_width="200dp"
         android:layout_height="30dp"
-        android:layout_alignLeft="@+id/editText2"
-        android:layout_alignStart="@+id/editText2"
-        android:layout_below="@+id/editText2"
+        android:layout_alignLeft="@+id/username_box"
+        android:layout_alignStart="@+id/username_box"
+        android:layout_below="@+id/username_box"
         android:layout_marginTop="28dp"
         android:background="#11000000"
         android:drawableLeft="@drawable/ic_action_pass"
@@ -46,7 +46,8 @@
         android:ems="10"
         android:hint="@string/password_text"
         android:inputType="textPassword"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:visibility="invisible" />
 
     <Button
         android:id="@+id/Blogin"

@@ -1,6 +1,5 @@
 package com.intoxecure.intoxecure;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -12,32 +11,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.v4.app.ActivityCompat;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
-
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
-
-import java.util.ArrayDeque;
 import java.lang.Math;
-import com.intoxecure.intoxecure.WeightedAverage;
-import java.lang.Iterable;
 
-import static java.lang.Math.sqrt;
-
-public class IntoxecureService extends Service implements SensorEventListener,SharedPreferences.OnSharedPreferenceChangeListener {
+public class IntoxecureService extends Service implements SensorEventListener {
     static final String SENT_BROADCAST = "SMS_SENT";
     static final String DELIVERED_BROADCAST = "SMS_DELIVERED";
     private static final String LOG_TAG = "ForegroundService";
@@ -50,15 +39,16 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
     private static long countTime;
     private static StepDetector accelStepDetector = new StepDetector();
     private static LinkedList<Long> countTimeDelta = new LinkedList<>();
-    private static double sigmaDeltaTime, sigmaDeltaTimeAlpha = 0.5;
+    private static double sigmaDeltaTime;
+    static double sigmaDeltaTimeAlpha = 0.5;
     private static double expMean, expMeanAlpha = 0.125;
     private static int fault = 0;
     private static PendingIntent pendSend, pendDeliver;
     private static SmsManager sms;
     private static ContactList contactList;
-    private static boolean smsEnabled;
-    private static float sensorSensitivity;
-    private static SharedPreferences preferences;
+    static boolean smsEnabled;
+    static float sensorSensitivity;
+    private static String username;
 
 
     private static int threshold;
@@ -125,6 +115,10 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
                 movingAverage.add(0.0);
                 movingSamples.add((long)0);
         }
+
+        // Get username from default shared preferences
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        username = preferences.getString("username", "Batman");
     }
 
     @Override
@@ -180,8 +174,8 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
                 count = countTemp;
 
                 long timeDeltaTemp = countTimeTemp-countTime;
-                computeAverage(timeDeltaTemp);
-                stdDevMethod(timeDeltaTemp);
+                //computeAverage(timeDeltaTemp);
+                //stdDevMethod(timeDeltaTemp);
                 if (countTimeDelta.size() == 1)
                     expMean = timeDeltaTemp;
                 else if (countTimeDelta.size() > 1)
@@ -192,14 +186,17 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
                 if (timeDeltaTemp > 10e9)
                     fault = 0;
 
-                if (fault > 3) {
+                if (fault > 10) {
+                    Log.d("smsEnabled", Boolean.toString(smsEnabled));
                     if (smsEnabled) {
                         for (String aContactNo : contactList.contactNo)
                             sms.sendTextMessage(aContactNo,
-                                    null, "You're friend [insert name] is probably " +
-                                            "drunk. Maybe you should check on him on this address",
+                                    null, "Your friend, " + username + ", has " +
+                                            "an abnormal walk pattern and may be drunk. " +
+                                            "Maybe you should check on him on this address",
                                     pendSend,
                                     pendDeliver);
+                        Log.d("sms", "sms send attmepted");
                     }
                     Log.d("Lasing ka pre", "UWI NA UY");
                     fault = 0;
@@ -316,19 +313,18 @@ public class IntoxecureService extends Service implements SensorEventListener,Sh
         }
         return Math.sqrt(standardDev / (movingAverage.size()));
     }
-
+/*
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        Log.d("asd",  "asd");
         if (key.equals("pref_key_enable_sms")) {
             smsEnabled = sharedPreferences.getBoolean("pref_key_enable_sms", false);
             Log.d("smsEnabled", Boolean.toString(smsEnabled));
         } else if (key.equals("pref_key_sensor_sensitivity")) {
             sensorSensitivity = sharedPreferences.getFloat("pref_key_sensor_sensitivity", 0);
-            sigmaDeltaTimeAlpha = sensorSensitivity*10;
+            sigmaDeltaTimeAlpha = sensorSensitivity*50;
             Log.d("sensitivity", Float.toString(sensorSensitivity));
         }
     }
-
+*/
     public double stdDevMethod(long timeDeltaTemp){
         movingSamples.removeFirst();
         movingSamples.addLast(timeDeltaTemp);
