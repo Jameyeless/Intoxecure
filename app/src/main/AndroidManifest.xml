@@ -26,9 +26,10 @@
         </activity>
         <activity android:name=".MainActivity" />
 
-        <service android:name=".IntoxecureService"
-            android:exported="true"
-            android:enabled="true"/>
+        <service
+            android:name=".IntoxecureService"
+            android:enabled="true"
+            android:exported="true" />
 
         <activity
             android:name=".SettingsActivity"
@@ -56,6 +57,14 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.intoxecure.intoxecure.ProfileActivity" />
+        </activity>
+        <activity android:name=".AboutActivity"
+            android:label="About"
+            android:parentActivityName=".MainActivity"
+            tools:targetApi="jelly_bean">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.intoxecure.intoxecure.MainActivity" />
         </activity>
     </application>
 

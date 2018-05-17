@@ -13,7 +13,7 @@
         android:layout_height="150dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="46dp"
+        android:layout_marginTop="86dp"
         android:contentDescription="@string/app_name"
         app:srcCompat="@drawable/intoxecure_logo_v3" />
 
@@ -21,9 +21,9 @@
         android:id="@+id/username_box"
         android:layout_width="200dp"
         android:layout_height="30dp"
-        android:layout_below="@+id/logo"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="108dp"
+        android:layout_marginBottom="176dp"
         android:background="#11000000"
         android:drawableLeft="@drawable/ic_action_username"
         android:drawableStart="@drawable/ic_action_username"
@@ -47,17 +47,16 @@
         android:hint="@string/password_text"
         android:inputType="textPassword"
         android:textSize="16sp"
-        android:visibility="invisible" />
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/Blogin"
         style="@android:style/Widget.Holo.Button"
         android:layout_width="200dp"
         android:layout_height="50dp"
-        android:layout_alignLeft="@+id/editText3"
-        android:layout_alignStart="@+id/editText3"
-        android:layout_below="@+id/editText3"
-        android:layout_marginTop="37dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="92dp"
         android:onClick="onLoginClick"
         android:text="@string/login_button" />
 
@@ -65,11 +64,12 @@
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/Blogin"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="8dp"
+        android:layout_marginBottom="83dp"
         android:text="@string/no_account_link"
         android:textColor="#fff"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        android:visibility="gone" />
 
 </RelativeLayout>

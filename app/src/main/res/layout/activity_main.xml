@@ -53,6 +53,7 @@
         android:layout_alignBottom="@+id/button4"
         android:layout_alignLeft="@+id/button3"
         android:layout_alignStart="@+id/button3"
+        android:onClick="onAboutClick"
         android:text="@string/about_button"
         android:textAllCaps="false"
         android:textColor="@android:color/background_light" />

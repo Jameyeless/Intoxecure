@@ -65,9 +65,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onLogoutClick(View v) {
-        if(v.getId() == R.id.logout){
-            Intent i = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(i);
-        }
+        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+    }
+
+    public void onAboutClick(View v) {
+        startActivity(new Intent(MainActivity.this, AboutActivity.class));
     }
 }

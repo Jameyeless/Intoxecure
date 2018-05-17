@@ -26,7 +26,8 @@ public class ProfileActivity extends AppCompatActivity {
 
         TextView username_text = findViewById(R.id.username_text);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        username_text.setText(preferences.getString("username","Batman"));
+        String user = preferences.getString("username","Batman");
+        username_text.setText(user.equals("")? "Batman" : user);
 
         contactList = new ContactList(this, false);
         adapter = new ContactsArrayAdapter(this, R.layout.trustee_list_item, contactList);

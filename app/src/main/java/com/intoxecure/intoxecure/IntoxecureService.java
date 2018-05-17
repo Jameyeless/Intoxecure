@@ -118,7 +118,8 @@ public class IntoxecureService extends Service implements SensorEventListener {
 
         // Get username from default shared preferences
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        username = preferences.getString("username", "Batman");
+        String user = preferences.getString("username","Batman");
+        username = user.equals("")? "Batman" : user;
     }
 
     @Override
